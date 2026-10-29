@@ -17,7 +17,7 @@ html
             -webkit-tap-highlight-color: transparent; 
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
             -webkit-user-select: none; user-select: none;
-            background: linear-gradient(135deg, #0f172a 0%, #1e1e24 50%, #111827 100%);
+            background: linear-gradient(135deg, #0f172a 0%, #1e1e24 50%, #111827 100%) !important;
         }
         input, select { -webkit-user-select: text; user-select: text; }
         .safe-top { padding-top: calc(env(safe-area-inset-top, 0px) + 1.2rem); }
@@ -47,7 +47,7 @@ html
 <body class="text-white min-h-screen flex flex-col justify-between">
 
     <!-- SECURITY GATE LOCK SCREEN -->
-    <div id="lockScreen" class="fixed inset-0 flex flex-col items-center justify-center z-50 p-6 bg-slate-950/80 backdrop-blur-md">
+    <div id="lockScreen" class="fixed inset-0 flex flex-col items-center justify-center z-50 p-6 bg-slate-950/90 backdrop-blur-md">
         <div class="w-full max-w-sm apple-card p-8 rounded-[2rem] text-center">
             <div class="w-16 h-16 bg-gradient-to-tr from-emerald-400 to-teal-500 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-xl shadow-emerald-500/10 mb-4">
                 🔒
@@ -61,7 +61,7 @@ html
                 <button onclick="verifyPin()" class="w-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-slate-950 font-bold p-4 rounded-2xl transition shadow-lg mt-4 text-sm tracking-wide active:scale-[0.98]">
                     Unlock Database
                 </button>
-                <p id="lockError" class="text-xs text-rose-400 mt-3 font-semibold hidden">Access Violation. Counter-Token Invalid.</p>
+                <p id="lockError" class="text-xs text-rose-400 mt-3 font-semibold hidden">Access Violation. Token Invalid.</p>
             </div>
         </div>
     </div>
