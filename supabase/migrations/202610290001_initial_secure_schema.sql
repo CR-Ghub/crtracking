@@ -202,26 +202,18 @@ grant select, insert, update, delete on public.active_timers to authenticated;
 grant select, insert, update on public.reminder_preferences to authenticated;
 
 -- Profile: only the signed-in user can access their profile.
-drop policy if exists profiles_select_self on public.profiles;
 create policy profiles_select_self on public.profiles for select to authenticated using (id = (select auth.uid()));
-drop policy if exists profiles_insert_self on public.profiles;
 create policy profiles_insert_self on public.profiles for insert to authenticated with check (id = (select auth.uid()));
-drop policy if exists profiles_update_self on public.profiles;
 create policy profiles_update_self on public.profiles for update to authenticated using (id = (select auth.uid())) with check (id = (select auth.uid()));
 
 -- Workspace creation is owner-only initially; invite/admin workflows will be added deliberately later.
-drop policy if exists workspaces_select_member on public.workspaces;
 create policy workspaces_select_member on public.workspaces for select to authenticated
 using (public.is_workspace_member(id) or created_by = (select auth.uid()));
-drop policy if exists workspaces_insert_creator on public.workspaces;
 create policy workspaces_insert_creator on public.workspaces for insert to authenticated with check (created_by = (select auth.uid()));
-drop policy if exists workspaces_update_owner_admin on public.workspaces;
 create policy workspaces_update_owner_admin on public.workspaces for update to authenticated using (public.has_workspace_role(id, array['owner','admin'])) with check (public.has_workspace_role(id, array['owner','admin']));
 
 -- Membership: members can see their workspace membership list; a workspace creator can add only themselves as owner.
-drop policy if exists workspace_members_select_member on public.workspace_members;
 create policy workspace_members_select_member on public.workspace_members for select to authenticated using (public.is_workspace_member(workspace_id));
-drop policy if exists workspace_members_insert_creator_self on public.workspace_members;
 create policy workspace_members_insert_creator_self on public.workspace_members for insert to authenticated
 with check (
   user_id = (select auth.uid())
@@ -229,27 +221,21 @@ with check (
   and public.is_workspace_creator(workspace_id)
 );
 -- Membership role changes are deliberately disabled until a reviewed invitation/admin workflow exists.
-drop policy if exists workspace_members_delete_admin on public.workspace_members;
 create policy workspace_members_delete_admin on public.workspace_members for delete to authenticated
 using (public.has_workspace_role(workspace_id, array['owner','admin']) and user_id <> (select auth.uid()));
 
 -- All workspace data requires membership. Private spaces are visible only to their creator unless marked shared.
-drop policy if exists spaces_select_member on public.spaces;
 create policy spaces_select_member on public.spaces for select to authenticated
 using (public.is_workspace_member(workspace_id) and (not is_private or created_by = (select auth.uid())));
-drop policy if exists spaces_insert_member on public.spaces;
 create policy spaces_insert_member on public.spaces for insert to authenticated
 with check (public.is_workspace_member(workspace_id) and created_by = (select auth.uid()));
-drop policy if exists spaces_update_member on public.spaces;
 create policy spaces_update_member on public.spaces for update to authenticated
 using (public.is_workspace_member(workspace_id) and (not is_private or created_by = (select auth.uid())))
 with check (public.is_workspace_member(workspace_id) and created_by = (select auth.uid()));
-drop policy if exists spaces_delete_member on public.spaces;
 create policy spaces_delete_member on public.spaces for delete to authenticated
 using (public.is_workspace_member(workspace_id) and created_by = (select auth.uid()));
 
 -- Workspace data policies; membership is required for all operations.
-drop policy if exists tasks_member_all on public.tasks;
 create policy tasks_member_all on public.tasks for all to authenticated
 using (
   public.is_workspace_member(workspace_id)
@@ -276,7 +262,6 @@ with check (
     )
   )
 );
-drop policy if exists calendar_events_member_all on public.calendar_events;
 create policy calendar_events_member_all on public.calendar_events for all to authenticated
 using (
   public.is_workspace_member(workspace_id)
@@ -303,11 +288,9 @@ with check (
     )
   )
 );
-drop policy if exists jobs_member_all on public.jobs;
 create policy jobs_member_all on public.jobs for all to authenticated
 using (public.is_workspace_member(workspace_id))
 with check (public.is_workspace_member(workspace_id) and created_by = (select auth.uid()));
-drop policy if exists time_entries_member_all on public.time_entries;
 create policy time_entries_member_all on public.time_entries for all to authenticated
 using (
   public.is_workspace_member(workspace_id)
@@ -332,7 +315,6 @@ with check (
     where t.id = task_id and t.workspace_id = time_entries.workspace_id
   ))
 );
-drop policy if exists active_timers_owner_all on public.active_timers;
 create policy active_timers_owner_all on public.active_timers for all to authenticated
 using (
   user_id = (select auth.uid())
@@ -358,7 +340,6 @@ with check (
     where t.id = task_id and t.workspace_id = active_timers.workspace_id
   ))
 );
-drop policy if exists reminder_preferences_self_all on public.reminder_preferences;
 create policy reminder_preferences_self_all on public.reminder_preferences for all to authenticated
 using (user_id = (select auth.uid()))
 with check (user_id = (select auth.uid()));
