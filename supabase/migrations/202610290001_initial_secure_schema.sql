@@ -145,6 +145,18 @@ as $$
   );
 $$;
 
+create or replace function public.is_workspace_creator(target_workspace uuid)
+returns boolean
+language sql stable security definer
+set search_path = ''
+as $
+  select exists (
+    select 1 from public.workspaces w
+    where w.id = target_workspace
+      and w.created_by = (select auth.uid())
+  );
+$;
+
 create or replace function public.has_workspace_role(target_workspace uuid, allowed_roles text[])
 returns boolean
 language sql stable security definer
@@ -160,8 +172,10 @@ $$;
 
 revoke all on function public.is_workspace_member(uuid) from public, anon;
 revoke all on function public.has_workspace_role(uuid, text[]) from public, anon;
+revoke all on function public.is_workspace_creator(uuid) from public, anon;
 grant execute on function public.is_workspace_member(uuid) to authenticated;
 grant execute on function public.has_workspace_role(uuid, text[]) to authenticated;
+grant execute on function public.is_workspace_creator(uuid) to authenticated;
 
 -- Enable RLS on every exposed table.
 alter table public.profiles enable row level security;
@@ -211,7 +225,7 @@ create policy workspace_members_insert_creator_self on public.workspace_members 
 with check (
   user_id = (select auth.uid())
   and role = 'owner'
-  and exists (select 1 from public.workspaces w where w.id = workspace_id and w.created_by = (select auth.uid()))
+  and public.is_workspace_creator(workspace_id)
 );
 drop policy if exists workspace_members_update_admin on public.workspace_members;
 create policy workspace_members_update_admin on public.workspace_members for update to authenticated
