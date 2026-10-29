@@ -195,7 +195,7 @@ revoke all on public.profiles, public.workspaces, public.workspace_members, publ
   public.active_timers, public.reminder_preferences from anon, authenticated;
 grant select, insert, update on public.profiles to authenticated;
 grant select, insert, update on public.workspaces to authenticated;
-grant select, insert, update, delete on public.workspace_members to authenticated;
+grant select, insert, delete on public.workspace_members to authenticated;
 grant select, insert, update, delete on public.spaces, public.tasks, public.calendar_events,
   public.jobs, public.time_entries to authenticated;
 grant select, insert, update, delete on public.active_timers to authenticated;
@@ -228,10 +228,7 @@ with check (
   and role = 'owner'
   and public.is_workspace_creator(workspace_id)
 );
-drop policy if exists workspace_members_update_admin on public.workspace_members;
-create policy workspace_members_update_admin on public.workspace_members for update to authenticated
-using (public.has_workspace_role(workspace_id, array['owner','admin']))
-with check (public.has_workspace_role(workspace_id, array['owner','admin']));
+-- Membership role changes are deliberately disabled until a reviewed invitation/admin workflow exists.
 drop policy if exists workspace_members_delete_admin on public.workspace_members;
 create policy workspace_members_delete_admin on public.workspace_members for delete to authenticated
 using (public.has_workspace_role(workspace_id, array['owner','admin']) and user_id <> (select auth.uid()));
@@ -312,12 +309,55 @@ using (public.is_workspace_member(workspace_id))
 with check (public.is_workspace_member(workspace_id) and created_by = (select auth.uid()));
 drop policy if exists time_entries_member_all on public.time_entries;
 create policy time_entries_member_all on public.time_entries for all to authenticated
-using (public.is_workspace_member(workspace_id))
-with check (public.is_workspace_member(workspace_id) and created_by = (select auth.uid()));
+using (
+  public.is_workspace_member(workspace_id)
+  and (job_id is null or exists (
+    select 1 from public.jobs j
+    where j.id = job_id and j.workspace_id = time_entries.workspace_id
+  ))
+  and (task_id is null or exists (
+    select 1 from public.tasks t
+    where t.id = task_id and t.workspace_id = time_entries.workspace_id
+  ))
+)
+with check (
+  public.is_workspace_member(workspace_id)
+  and created_by = (select auth.uid())
+  and (job_id is null or exists (
+    select 1 from public.jobs j
+    where j.id = job_id and j.workspace_id = time_entries.workspace_id
+  ))
+  and (task_id is null or exists (
+    select 1 from public.tasks t
+    where t.id = task_id and t.workspace_id = time_entries.workspace_id
+  ))
+);
 drop policy if exists active_timers_owner_all on public.active_timers;
 create policy active_timers_owner_all on public.active_timers for all to authenticated
-using (user_id = (select auth.uid()) and public.is_workspace_member(workspace_id))
-with check (user_id = (select auth.uid()) and public.is_workspace_member(workspace_id));
+using (
+  user_id = (select auth.uid())
+  and public.is_workspace_member(workspace_id)
+  and (job_id is null or exists (
+    select 1 from public.jobs j
+    where j.id = job_id and j.workspace_id = active_timers.workspace_id
+  ))
+  and (task_id is null or exists (
+    select 1 from public.tasks t
+    where t.id = task_id and t.workspace_id = active_timers.workspace_id
+  ))
+)
+with check (
+  user_id = (select auth.uid())
+  and public.is_workspace_member(workspace_id)
+  and (job_id is null or exists (
+    select 1 from public.jobs j
+    where j.id = job_id and j.workspace_id = active_timers.workspace_id
+  ))
+  and (task_id is null or exists (
+    select 1 from public.tasks t
+    where t.id = task_id and t.workspace_id = active_timers.workspace_id
+  ))
+);
 drop policy if exists reminder_preferences_self_all on public.reminder_preferences;
 create policy reminder_preferences_self_all on public.reminder_preferences for all to authenticated
 using (user_id = (select auth.uid()))
