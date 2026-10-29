@@ -39,10 +39,11 @@
       <div id="session" class="hidden border-t border-slate-600 mt-5 pt-4">
         <p class="text-emerald-300 font-semibold">Authenticated session detected</p>
         <p id="session-email" class="text-sm text-slate-300 mt-1 break-words"></p>
-        <button id="signout" class="mt-4 rounded-lg px-4 py-2 bg-slate-700">Sign out</button>
+        <a id="open-planner" href="/app.html" class="inline-block mt-4 rounded-lg px-4 py-3 font-semibold bg-emerald-400 text-slate-950">Continue to planner</a>
+        <button id="signout" class="mt-4 ml-2 rounded-lg px-4 py-3 bg-slate-700">Sign out</button>
       </div>
     </section>
-    <p class="text-xs text-slate-400 mt-5 leading-relaxed">This isolated page tests Supabase Auth only. It does not yet connect the planner UI or write to the database. Do not use sensitive work or family data on this test page. The publishable key is intended for client-side use; database security depends on correctly tested RLS policies.</p>
+    <p class="text-xs text-slate-400 mt-5 leading-relaxed">Use Continue to planner after signing in to open the development planner. This preview is under active testing; do not store sensitive work or family information until database access and permissions have been fully tested. The publishable key is intended for client-side use; database security depends on correctly tested RLS policies.</p>
   </main>
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -93,7 +94,8 @@
       if (!form.reportValidity()) return;
       const { data, error } = await supabase.auth.signUp({
         email: emailInput.value.trim(),
-        password: passwordInput.value
+        password: passwordInput.value,
+        options: { emailRedirectTo: window.location.origin + '/supabase-auth-test.html' }
       });
       if (error) return showMessage(error.message, true);
       if (data.session) {
