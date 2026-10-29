@@ -149,13 +149,13 @@ create or replace function public.is_workspace_creator(target_workspace uuid)
 returns boolean
 language sql stable security definer
 set search_path = ''
-as $
+as $$
   select exists (
     select 1 from public.workspaces w
     where w.id = target_workspace
       and w.created_by = (select auth.uid())
   );
-$;
+$$;
 
 create or replace function public.has_workspace_role(target_workspace uuid, allowed_roles text[])
 returns boolean
@@ -211,7 +211,8 @@ create policy profiles_update_self on public.profiles for update to authenticate
 
 -- Workspace creation is owner-only initially; invite/admin workflows will be added deliberately later.
 drop policy if exists workspaces_select_member on public.workspaces;
-create policy workspaces_select_member on public.workspaces for select to authenticated using (public.is_workspace_member(id));
+create policy workspaces_select_member on public.workspaces for select to authenticated
+using (public.is_workspace_member(id) or created_by = (select auth.uid()));
 drop policy if exists workspaces_insert_creator on public.workspaces;
 create policy workspaces_insert_creator on public.workspaces for insert to authenticated with check (created_by = (select auth.uid()));
 drop policy if exists workspaces_update_owner_admin on public.workspaces;
