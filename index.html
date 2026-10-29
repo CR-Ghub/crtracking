@@ -1,0 +1,161 @@
+html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>CRTracking</title>
+    
+    <!-- Apple Web App Metas -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CRTracking">
+    
+    <script src="https://tailwindcss.com"></script>
+    <style>
+        body { 
+            -webkit-tap-highlight-color: transparent; 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-user-select: none; user-select: none;
+            background-color: #000000;
+        }
+        input, select { -webkit-user-select: text; user-select: text; }
+        .safe-top { padding-top: calc(env(safe-area-inset-top, 0px) + 1.2rem); }
+        .safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem); }
+        .apple-card {
+            background: rgba(28, 28, 30, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .apple-input {
+            background: rgba(44, 44, 46, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s ease;
+        }
+        .apple-input:focus {
+            border-color: #30d158;
+            background: rgba(44, 44, 46, 0.9);
+        }
+    </style>
+</head>
+<body class="text-white min-h-screen flex flex-col justify-between">
+
+    <!-- SECURITY GATE LOCK SCREEN -->
+    <div id="lockScreen" class="fixed inset-0 bg-black flex flex-col items-center justify-center z-50 p-6">
+        <div class="w-full max-w-sm apple-card p-8 rounded-3xl text-center shadow-2xl">
+            <div class="text-4xl mb-4 text-emerald-400">🔒</div>
+            <h2 class="text-xl font-semibold tracking-tight text-white">CRTracking Security</h2>
+            <p class="text-xs text-slate-400 mt-1">Enter your secure authentication token.</p>
+            
+            <div class="mt-6">
+                <input type="password" id="pinInput" maxlength="8" placeholder="Enter PIN" 
+                       class="w-full apple-input rounded-2xl p-4 text-center text-xl font-bold tracking-widest text-emerald-400 focus:outline-none">
+                <button onclick="verifyPin()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-semibold p-4 rounded-2xl transition shadow-lg mt-4 text-sm tracking-wide active:scale-[0.98]">
+                    Unlock
+                </button>
+                <p id="lockError" class="text-xs text-rose-400 mt-3 font-medium hidden">Access Denied. Invalid PIN.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTENT -->
+    <div id="appContent" class="hidden flex-1 flex flex-col justify-between">
+        <div>
+            <!-- Header Banner -->
+            <header class="bg-[#1c1c1e]/60 backdrop-blur-xl px-5 pb-6 safe-top rounded-b-[2.5rem] border-b border-white/5">
+                <div class="flex justify-between items-center mb-5">
+                    <h1 class="text-2xl font-semibold tracking-tight text-white">
+                        CRTracking
+                    </h1>
+                    <div class="flex gap-2">
+                        <button onclick="lockApp()" class="text-slate-400 p-2.5 text-xs bg-[#2c2c2e]/60 rounded-xl border border-white/5 active:scale-95 transition-transform">🔒 Lock</button>
+                        <button onclick="toggleSettings()" class="text-slate-400 p-2.5 text-lg active:scale-95 transition-transform">⚙️</button>
+                    </div>
+                </div>
+                
+                <!-- Countdown Component -->
+                <div class="p-4 bg-black/40 rounded-2xl border border-white/5">
+                    <div class="flex justify-between items-center text-[11px] font-medium text-slate-400 uppercase tracking-wider">
+                        <span>Cycle Deadline</span>
+                        <span id="deadlineTag" class="text-amber-400 font-medium">Sunday @ 23:59</span>
+                    </div>
+                    <div class="text-xl font-bold text-amber-400 tracking-tight mt-1" id="countdownDisplay">Calculating...</div>
+                </div>
+
+                <!-- OPTIMIZER BANNER -->
+                <div id="optimizerBanner" class="mt-3 p-3.5 bg-blue-500/10 border border-blue-500/20 rounded-2xl text-xs flex items-start gap-3">
+                    <div class="text-base">💡</div>
+                    <div>
+                        <div class="font-semibold text-blue-400" id="reminderAlertTitle">Utilization Status</div>
+                        <div class="text-slate-300 mt-0.5 leading-relaxed" id="optimizerRecommendation">Analyzing current timeline data...</div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Configuration Drawer -->
+            <section id="settingsDrawer" class="hidden px-5 mt-4">
+                <div class="apple-card p-5 rounded-2xl space-y-4 shadow-xl">
+                    <h3 class="text-sm font-semibold text-slate-200 border-b border-white/5 pb-2">Target Hour Profiles</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] text-slate-400 font-medium mb-1">Job A Goal (Hrs)</label>
+                            <input type="number" id="targetJobA" class="w-full apple-input rounded-xl p-3 text-white text-sm focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-slate-400 font-medium mb-1">Job B Goal (Hrs)</label>
+                            <input type="number" id="targetJobB" class="w-full apple-input rounded-xl p-3 text-white text-sm focus:outline-none">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] text-slate-400 font-medium mb-1">Deadline Day</label>
+                            <select id="deadlineDayInput" class="w-full apple-input rounded-xl p-3 text-white text-sm focus:outline-none">
+                                <option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option>
+                                <option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-slate-400 font-medium mb-1">Deadline Time</label>
+                            <input type="time" id="deadlineTimeInput" class="w-full apple-input rounded-xl p-3 text-white text-sm focus:outline-none">
+                        </div>
+                    </div>
+                    <button onclick="saveSettings()" class="w-full bg-[#2c2c2e] hover:bg-[#3a3a3c] text-emerald-400 font-medium text-xs py-3 rounded-xl border border-white/5 transition-colors">Save Configurations</button>
+                </div>
+            </section>
+
+            <!-- Metrics Matrix Grid -->
+            <section class="px-5 mt-6 grid grid-cols-2 gap-4">
+                <div class="apple-card p-4 rounded-2xl shadow-sm">
+                    <div class="text-[11px] text-slate-400 font-medium tracking-wide">Job Profile A</div>
+                    <div class="text-2xl font-bold text-white mt-1 tracking-tight" id="hoursJobA">0.00 / 0.00</div>
+                    <div class="text-[10px] text-slate-400 mt-1" id="remainJobA">Pending parameters</div>
+                </div>
+                <div class="apple-card p-4 rounded-2xl shadow-sm">
+                    <div class="text-[11px] text-slate-400 font-medium tracking-wide">Job Profile B</div>
+                    <div class="text-2xl font-bold text-white mt-1 tracking-tight" id="hoursJobB">0.00 / 0.00</div>
+                    <div class="text-[10px] text-slate-400 mt-1" id="remainJobB">Pending parameters</div>
+                </div>
+            </section>
+
+            <!-- Entry Panel -->
+            <main class="p-5">
+                <div class="apple-card p-5 rounded-2xl shadow-xl">
+                    <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2"><span>➕</span> Input Dynamic Hours</h2>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] text-slate-400 font-medium mb-1">Select Job</label>
+                                <select id="jobSelect" class="w-full apple-input rounded-xl p-3 text-white text-sm focus:outline-none">
+                                    <option value="A">Job Profile A</option>
+                                    <option value="B">Job Profile B</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 font-medium mb-1">Date of Work</label>
+                                <input type="date" id="dateInput" class="w-full apple-input rounded-xl p-3 text-white text-sm focus:outline-none">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] text-slate-400 font-medium mb-1">Start Time</label>
