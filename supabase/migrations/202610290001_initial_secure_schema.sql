@@ -253,12 +253,54 @@ using (public.is_workspace_member(workspace_id) and created_by = (select auth.ui
 -- Workspace data policies; membership is required for all operations.
 drop policy if exists tasks_member_all on public.tasks;
 create policy tasks_member_all on public.tasks for all to authenticated
-using (public.is_workspace_member(workspace_id))
-with check (public.is_workspace_member(workspace_id) and created_by = (select auth.uid()));
+using (
+  public.is_workspace_member(workspace_id)
+  and (
+    space_id is null
+    or exists (
+      select 1 from public.spaces s
+      where s.id = space_id
+        and (not s.is_private or s.created_by = (select auth.uid()))
+    )
+  )
+)
+with check (
+  public.is_workspace_member(workspace_id)
+  and created_by = (select auth.uid())
+  and (
+    space_id is null
+    or exists (
+      select 1 from public.spaces s
+      where s.id = space_id
+        and (not s.is_private or s.created_by = (select auth.uid()))
+    )
+  )
+);
 drop policy if exists calendar_events_member_all on public.calendar_events;
 create policy calendar_events_member_all on public.calendar_events for all to authenticated
-using (public.is_workspace_member(workspace_id))
-with check (public.is_workspace_member(workspace_id) and created_by = (select auth.uid()));
+using (
+  public.is_workspace_member(workspace_id)
+  and (
+    space_id is null
+    or exists (
+      select 1 from public.spaces s
+      where s.id = space_id
+        and (not s.is_private or s.created_by = (select auth.uid()))
+    )
+  )
+)
+with check (
+  public.is_workspace_member(workspace_id)
+  and created_by = (select auth.uid())
+  and (
+    space_id is null
+    or exists (
+      select 1 from public.spaces s
+      where s.id = space_id
+        and (not s.is_private or s.created_by = (select auth.uid()))
+    )
+  )
+);
 drop policy if exists jobs_member_all on public.jobs;
 create policy jobs_member_all on public.jobs for all to authenticated
 using (public.is_workspace_member(workspace_id))
