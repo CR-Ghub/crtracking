@@ -28,14 +28,14 @@
     <section id="planner" class="hidden mt-5 grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)]">
       <div class="panel rounded-2xl p-5">
         <div class="flex flex-wrap justify-between items-center gap-3"><div><p class="text-xs uppercase tracking-widest text-slate-400">Workspace</p><h2 id="workspace-title" class="text-xl font-semibold mt-1">My Workspace</h2></div><select id="workspace-select" class="field rounded-lg p-2 max-w-full" aria-label="Select workspace"></select></div>
-        <form id="task-form" class="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"><input id="task-title" class="field rounded-lg p-3" maxlength="240" placeholder="Add a task…" required><button class="rounded-lg px-5 py-3 font-semibold bg-emerald-400 text-slate-950" type="submit">Add task</button></form>
+        <form id="task-form" class="mt-5 grid gap-3 sm:grid-cols-2"><input id="task-title" class="field rounded-lg p-3 sm:col-span-2" maxlength="240" placeholder="Add a task…" required><label class="text-sm text-slate-300">Due date (optional)<input id="task-due" type="date" class="field rounded-lg p-3 mt-1 w-full"></label><label class="text-sm text-slate-300">Repeat<select id="task-repeat" class="field rounded-lg p-3 mt-1 w-full"><option value="">Does not repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></label><button class="rounded-lg px-5 py-3 font-semibold bg-emerald-400 text-slate-950 sm:col-span-2" type="submit">Add task</button></form>
         <div class="mt-5 flex flex-wrap items-center justify-between gap-2"><h3 class="font-semibold">Tasks</h3><select id="task-filter" class="field rounded-lg p-2 text-sm" aria-label="Filter tasks"><option value="all">All tasks</option><option value="todo">To do</option><option value="done">Completed</option></select></div>
         <ul id="task-list" class="mt-3 space-y-2"></ul>
         <p id="empty-tasks" class="text-sm text-slate-400 mt-4">No tasks yet. Add your first task above.</p>
       </div>
       <aside class="space-y-5">
         <div class="panel rounded-2xl p-5"><h2 class="font-semibold">Getting started</h2><ul class="mt-3 space-y-2 text-sm text-slate-300 list-disc pl-5"><li>Create your workspace</li><li>Add and complete tasks</li><li>Switch between available workspaces</li></ul></div>
-        <div class="panel rounded-2xl p-5"><h2 class="font-semibold">Development status</h2><p class="text-sm text-slate-300 mt-2">This is the first connected planner slice. Calendar, recurring tasks, family invitations, time tracking, reminders, and role management are not enabled yet.</p></div>
+        <div class="panel rounded-2xl p-5"><h2 class="font-semibold">Development status</h2><p class="text-sm text-slate-300 mt-2">Tasks now support optional due dates and daily, weekly, or monthly recurrence. Calendar, family invitations, time tracking, automated reminders, and role management are not enabled yet.</p></div>
       </aside>
     </section>
     <p class="text-xs text-slate-500 mt-8">Development environment only. Do not store sensitive work or family information until database access and permissions have been fully tested.</p>
@@ -52,6 +52,24 @@
     let activeWorkspaceId = null;
     let tasks = [];
     const setStatus = (text, isError = false) => { status.textContent = text; status.className = 'mt-6 text-sm ' + (isError ? 'text-rose-300' : 'text-slate-300'); };
+    function formatDueDate(value) {
+      if (!value) return '';
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString(undefined, {year:'numeric',month:'short',day:'numeric'});
+    }
+    function nextDueDate(value, recurrence) {
+      const base = value ? new Date(value) : new Date();
+      if (recurrence === 'daily') base.setDate(base.getDate() + 1);
+      else if (recurrence === 'weekly') base.setDate(base.getDate() + 7);
+      else if (recurrence === 'monthly') {
+        const day = base.getDate();
+        base.setDate(1);
+        base.setMonth(base.getMonth() + 1);
+        const lastDay = new Date(base.getFullYear(), base.getMonth() + 1, 0).getDate();
+        base.setDate(Math.min(day, lastDay));
+      }
+      return base.toISOString();
+    }
     function renderTasks() {
       const filter = $('#task-filter').value;
       const visible = tasks.filter(t => filter === 'all' || (filter === 'done' ? t.status === 'done' : t.status !== 'done'));
@@ -62,23 +80,45 @@
         li.className = 'flex items-start gap-3 rounded-xl bg-slate-900/70 border border-slate-700 p-3';
         const check = document.createElement('input'); check.type = 'checkbox'; check.checked = task.status === 'done'; check.className = 'mt-1 accent-emerald-400'; check.setAttribute('aria-label', 'Mark task complete');
         check.addEventListener('change', async () => {
+          const completing = check.checked && task.status !== 'done';
           const { error } = await supabase.from('tasks').update({status: check.checked ? 'done' : 'todo'}).eq('id', task.id);
           if (error) { setStatus('Could not update task: ' + error.message, true); return; }
+          if (completing && task.recurrence_rule) {
+            const next = {
+              workspace_id: task.workspace_id,
+              space_id: task.space_id,
+              title: task.title,
+              description: task.description,
+              status: 'todo',
+              priority: task.priority || 'normal',
+              due_at: nextDueDate(task.due_at, task.recurrence_rule),
+              recurrence_rule: task.recurrence_rule,
+              created_by: user.id
+            };
+            const { error: repeatError } = await supabase.from('tasks').insert(next);
+            if (repeatError) { await loadTasks(); setStatus('Task completed, but the next recurring task could not be created: ' + repeatError.message, true); return; }
+          }
           await loadTasks();
         });
-        const title = document.createElement('span'); title.textContent = task.title; title.className = 'flex-1 break-words ' + (task.status === 'done' ? 'line-through text-slate-500' : '');
+        const titleWrap = document.createElement('div'); titleWrap.className = 'flex-1 min-w-0';
+        const title = document.createElement('div'); title.textContent = task.title; title.className = 'break-words ' + (task.status === 'done' ? 'line-through text-slate-500' : '');
+        titleWrap.append(title);
+        const meta = [];
+        if (task.due_at) meta.push('Due ' + formatDueDate(task.due_at));
+        if (task.recurrence_rule) meta.push('Repeats ' + task.recurrence_rule);
+        if (meta.length) { const details = document.createElement('div'); details.textContent = meta.join(' · '); details.className = 'text-xs text-slate-400 mt-1'; titleWrap.append(details); }
         const del = document.createElement('button'); del.type = 'button'; del.textContent = 'Delete'; del.className = 'text-xs text-rose-300 hover:text-rose-200'; del.addEventListener('click', async () => {
           if (!confirm('Delete this task?')) return;
           const { error } = await supabase.from('tasks').delete().eq('id', task.id);
           if (error) { setStatus('Could not delete task: ' + error.message, true); return; }
           await loadTasks();
         });
-        li.append(check, title, del); $('#task-list').append(li);
+        li.append(check, titleWrap, del); $('#task-list').append(li);
       }
     }
     async function loadTasks() {
       if (!activeWorkspaceId) return;
-      const { data, error } = await supabase.from('tasks').select('id,title,status,created_at').eq('workspace_id', activeWorkspaceId).order('created_at', {ascending:false});
+      const { data, error } = await supabase.from('tasks').select('id,title,status,created_at,workspace_id,space_id,description,priority,due_at,recurrence_rule').eq('workspace_id', activeWorkspaceId).order('created_at', {ascending:false});
       if (error) { setStatus('Workspace loaded, but tasks could not be read: ' + error.message, true); return; }
       tasks = data || []; renderTasks();
     }
@@ -124,9 +164,13 @@
     $('#task-form').addEventListener('submit', async (event) => {
       event.preventDefault(); if (!user || !activeWorkspaceId) return;
       const title = $('#task-title').value.trim(); if (!title) return;
-      const { error } = await supabase.from('tasks').insert({workspace_id:activeWorkspaceId,title,status:'todo',priority:'normal',created_by:user.id});
+      const dueValue = $('#task-due').value;
+      const dueAt = dueValue ? new Date(dueValue + 'T23:59:59').toISOString() : null;
+      const recurrence = $('#task-repeat').value || null;
+      const { error } = await supabase.from('tasks').insert({workspace_id:activeWorkspaceId,title,status:'todo',priority:'normal',due_at:dueAt,recurrence_rule:recurrence,created_by:user.id});
       if (error) { setStatus('Task could not be saved: ' + error.message, true); return; }
-      $('#task-title').value = ''; await loadTasks(); setStatus('Task saved.');
+      $('#task-title').value = ''; $('#task-due').value = ''; $('#task-repeat').value = '';
+      await loadTasks(); setStatus(recurrence ? 'Recurring task saved. The next occurrence is created when you complete it.' : 'Task saved.');
     });
     $('#workspace-select').addEventListener('change', async () => { activeWorkspaceId = $('#workspace-select').value; $('#workspace-title').textContent = workspaces.find(w => w.id === activeWorkspaceId)?.name || 'Workspace'; await loadTasks(); });
     $('#task-filter').addEventListener('change', renderTasks);
