@@ -363,4 +363,4 @@ create policy reminder_preferences_self_all on public.reminder_preferences for a
 using (user_id = (select auth.uid()))
 with check (user_id = (select auth.uid()));
 
-commit();
+commit;
