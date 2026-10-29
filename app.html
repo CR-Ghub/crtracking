@@ -89,11 +89,12 @@
       idleOverlay.classList.remove('flex');
     }
     function showIdleWarning(remainingMs) {
+      const wasVisible = warningVisible;
       warningVisible = true;
       $('#idle-timeout-message').textContent = 'For your security, you’ll be signed out in about ' + Math.max(1, Math.ceil(remainingMs / 60000)) + ' minute(s) unless you continue.';
       idleOverlay.classList.remove('hidden');
       idleOverlay.classList.add('flex');
-      stayButton.focus();
+      if (!wasVisible) stayButton.focus();
     }
     async function performIdleSignout() {
       if (idleCheckHandle) clearInterval(idleCheckHandle);
