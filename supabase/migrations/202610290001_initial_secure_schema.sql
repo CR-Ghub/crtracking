@@ -261,6 +261,7 @@ using (
     or exists (
       select 1 from public.spaces s
       where s.id = space_id
+        and s.workspace_id = tasks.workspace_id
         and (not s.is_private or s.created_by = (select auth.uid()))
     )
   )
@@ -273,6 +274,7 @@ with check (
     or exists (
       select 1 from public.spaces s
       where s.id = space_id
+        and s.workspace_id = tasks.workspace_id
         and (not s.is_private or s.created_by = (select auth.uid()))
     )
   )
@@ -286,6 +288,7 @@ using (
     or exists (
       select 1 from public.spaces s
       where s.id = space_id
+        and s.workspace_id = calendar_events.workspace_id
         and (not s.is_private or s.created_by = (select auth.uid()))
     )
   )
@@ -298,6 +301,7 @@ with check (
     or exists (
       select 1 from public.spaces s
       where s.id = space_id
+        and s.workspace_id = calendar_events.workspace_id
         and (not s.is_private or s.created_by = (select auth.uid()))
     )
   )
