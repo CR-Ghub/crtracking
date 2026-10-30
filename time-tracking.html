@@ -16,11 +16,54 @@ button,a,select,input{transition:background-color .16s ease,border-color .16s ea
 .simple-mode .advanced-only{display:none!important}
 @media(max-width:640px){body{padding-bottom:2rem}.cr-nav{position:sticky;top:0;z-index:20;background:rgba(244,247,251,.92);backdrop-filter:blur(12px);margin:0 -1rem;padding:.7rem 1rem}.panel{border-radius:1.15rem!important}.field{font-size:16px}.cr-nav a{padding:.65rem .85rem}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important}}
+
+/* Consumer-first refinements: accessible, calm, touch-friendly */
+:root{font-size:16px;scroll-behavior:smooth}
+html[data-text-size="large"]{font-size:18px}
+html[data-text-size="larger"]{font-size:20px}
+body{-webkit-tap-highlight-color:transparent;min-height:100vh;min-height:100dvh;padding-left:max(1rem,env(safe-area-inset-left));padding-right:max(1rem,env(safe-area-inset-right))}
+main{width:100%;max-width:76rem}
+h1,h2,h3{letter-spacing:-.035em}
+h1{line-height:1.12}
+.panel{border-radius:1.25rem}
+input,select,textarea{font-size:16px!important;min-height:46px}
+button,a,[role="button"]{touch-action:manipulation}
+button{font-weight:600}
+button:disabled{opacity:.48;cursor:not-allowed}
+label{line-height:1.45}
+.cr-skip{position:absolute;left:1rem;top:-5rem;z-index:100;background:#fff;color:#17243a;padding:.75rem 1rem;border-radius:.75rem;box-shadow:0 4px 18px #17243a22}
+.cr-skip:focus{top:1rem}
+.cr-accessibility{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap}
+.cr-accessibility button{min-width:40px;min-height:40px;border:1px solid #d8e1eb;background:#fff;color:#26364b;border-radius:12px;padding:.4rem .65rem;font-size:.85rem}
+.cr-accessibility button[aria-pressed="true"]{background:#e8f5f1;border-color:#168b78;color:#116b5d}
+.cr-nav{align-items:center;justify-content:space-around}
+.cr-nav a{display:flex;align-items:center;justify-content:center;min-height:44px}
+.cr-nav a[aria-current="page"]{background:#e8f5f1;border-color:#b7dcd3;color:#116b5d}
+.cr-nav .cr-nav-add{background:#168b78;color:#fff;border-color:#168b78;box-shadow:0 5px 14px #168b7830}
+.cr-nav .cr-nav-add:hover{background:#116b5d;color:#fff}
+section[id],div[id],form[id]{scroll-margin-top:1.5rem}
+.cr-high-contrast{--cr-ink:#081525;--cr-muted:#34445a;--cr-border:#9aaabd}
+.cr-high-contrast .panel{border:2px solid #687b90;box-shadow:0 4px 16px #17243a12}
+.cr-high-contrast .text-slate-400,.cr-high-contrast .text-slate-500{color:#34445a!important}
+.cr-high-contrast .field{border:2px solid #65788d;color:#081525}
+@media(max-width:640px){
+ body{padding-top:1rem;padding-bottom:calc(6.5rem + env(safe-area-inset-bottom))}
+ header{align-items:flex-start}
+ header>div:first-child{max-width:100%}
+ header h1{font-size:1.8rem}
+ .cr-nav{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:50;margin:0;padding:.55rem max(.35rem,env(safe-area-inset-left)) calc(.55rem + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);border-top:1px solid #dce5ed;box-shadow:0 -8px 24px rgba(28,45,72,.09);backdrop-filter:blur(18px);gap:.2rem;overflow-x:auto;justify-content:space-between}
+ .cr-nav a{flex:1 0 auto;min-width:0;padding:.55rem .6rem;font-size:.78rem;border:0;background:transparent;border-radius:.8rem}
+ .cr-nav .cr-nav-add{flex:1.15 0 auto;border-radius:1rem}
+ .cr-accessibility{width:100%;justify-content:flex-end}
+ .panel{padding:1rem!important}
+}
+@media(prefers-reduced-motion:reduce){:root{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
 </style>
 </head>
-<body class="simple-mode text-slate-900 px-4 py-6 sm:py-8"><main class="max-w-6xl mx-auto">
-<header class="flex flex-wrap items-center justify-between gap-4"><div><p class="text-emerald-400 text-xs uppercase tracking-[.22em] font-bold">Development preview</p><h1 class="text-3xl font-bold mt-1">Time tracking</h1><p class="text-slate-300 mt-1">Jobs, timers, manual entries, and weekly targets</p></div><div class="flex flex-wrap items-center gap-3"><button id="mode-toggle" class="cr-mode" type="button" aria-pressed="false">Switch to Advanced</button><a href="/app.html" class="rounded-lg px-4 py-2 bg-slate-700 hover:bg-slate-600">Back to planner</a><button id="signout" class="rounded-lg px-4 py-2 bg-slate-700 hover:bg-slate-600">Sign out</button></div></header>
-<nav class="cr-nav" aria-label="Main navigation"><a href="/app.html">Home</a><a href="#live-timer">Timer</a><a href="#jobs-panel">Jobs</a><a href="#manual-entry">Manual entry</a><a href="#summary-panel">Summary</a></nav>
+<body class="simple-mode text-slate-900 px-4 py-6 sm:py-8"><a class="cr-skip" href="#main-content">Skip to main content</a><main id="main-content" class="max-w-6xl mx-auto">
+<header class="flex flex-wrap items-center justify-between gap-4"><div><p class="text-emerald-400 text-xs uppercase tracking-[.22em] font-bold">Development preview</p><h1 class="text-3xl font-bold mt-1">Time tracking</h1><p class="text-slate-300 mt-1">Jobs, timers, manual entries, and weekly targets</p></div><div class="flex flex-wrap items-center gap-3"><button id="mode-toggle" class="cr-mode" type="button" aria-pressed="false">Switch to Advanced</button><div class="cr-accessibility" aria-label="Accessibility preferences"><button id="text-smaller" type="button" aria-label="Use standard text size" title="Standard text">A</button><button id="text-larger" type="button" aria-label="Increase text size" title="Larger text">A+</button><button id="contrast-toggle" type="button" aria-pressed="false" aria-label="Toggle high contrast" title="High contrast">◐</button></div><a href="/app.html" class="rounded-lg px-4 py-2 bg-slate-700 hover:bg-slate-600">Back to planner</a><button id="signout" class="rounded-lg px-4 py-2 bg-slate-700 hover:bg-slate-600">Sign out</button></div></header>
+<nav class="cr-nav" aria-label="Main navigation"><a href="/app.html">Home</a><a href="#live-timer" aria-current="page">Timer</a><a href="#jobs-panel">Jobs</a><a class="cr-nav-add" href="#manual-entry">+ Add time</a><a href="#summary-panel">Summary</a></nav>
 <div id="status" role="status" aria-live="polite" class="mt-6 text-sm text-slate-300">Checking your session…</div>
 <section class="grid gap-5 mt-5 lg:grid-cols-2">
 <div id="live-timer" class="panel rounded-2xl p-5"><p class="text-xs uppercase tracking-widest text-emerald-300">Live timer</p><p id="timer-state" class="text-sm text-slate-300 mt-2">No timer running.</p><div id="timer-clock" class="text-4xl font-semibold tracking-tight mt-3 tabular-nums">00:00:00</div>
@@ -42,6 +85,15 @@ const modeToggle=document.querySelector('#mode-toggle');
 function applyInterfaceMode(mode){const advanced=mode==='advanced';document.body.classList.toggle('simple-mode',!advanced);modeToggle.textContent=advanced?'Switch to Simple':'Switch to Advanced';modeToggle.setAttribute('aria-pressed',String(advanced));try{localStorage.setItem('crtracking:interface-mode',mode)}catch(_){}}
 let savedMode='simple';try{savedMode=localStorage.getItem('crtracking:interface-mode')||'simple'}catch(_){}applyInterfaceMode(savedMode);
 modeToggle.addEventListener('click',()=>applyInterfaceMode(document.body.classList.contains('simple-mode')?'advanced':'simple'));
+
+    const smallerButton=$('#text-smaller'),largerButton=$('#text-larger'),contrastButton=$('#contrast-toggle');
+    let accessibilityPrefs={textSize:'standard',highContrast:false};
+    try{accessibilityPrefs={...accessibilityPrefs,...JSON.parse(localStorage.getItem('crtracking:accessibility')||'{}')}}catch(_){}
+    function applyAccessibility(){const sizes=['standard','large','larger'];document.documentElement.dataset.textSize=accessibilityPrefs.textSize;document.body.classList.toggle('cr-high-contrast',!!accessibilityPrefs.highContrast);smallerButton.setAttribute('aria-pressed',String(accessibilityPrefs.textSize==='standard'));largerButton.setAttribute('aria-pressed',String(accessibilityPrefs.textSize!=='standard'));contrastButton.setAttribute('aria-pressed',String(!!accessibilityPrefs.highContrast));try{localStorage.setItem('crtracking:accessibility',JSON.stringify(accessibilityPrefs))}catch(_){}}
+    smallerButton.addEventListener('click',()=>{accessibilityPrefs.textSize='standard';applyAccessibility()});
+    largerButton.addEventListener('click',()=>{accessibilityPrefs.textSize=accessibilityPrefs.textSize==='standard'?'large':accessibilityPrefs.textSize==='large'?'larger':'larger';applyAccessibility()});
+    contrastButton.addEventListener('click',()=>{accessibilityPrefs.highContrast=!accessibilityPrefs.highContrast;applyAccessibility()});applyAccessibility();
+
 const $=s=>document.querySelector(s);let user=null,workspaceId=null,jobs=[],tasks=[],timer=null,entries=[],reportEntries=[],tick=null,warnedTimerId=null;
 function status(t,err=false){$('#status').textContent=t;$('#status').className='mt-6 text-sm '+(err?'text-rose-300':'text-slate-300')}
 function dateValue(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}function timeValue(d=new Date()){return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}function durationParts(n){n=Math.max(0,Math.floor(Number(n)||0));return {hours:Math.floor(n/60),minutes:n%60}}
