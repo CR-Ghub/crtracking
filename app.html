@@ -27,15 +27,15 @@
     </section>
     <section id="planner" class="hidden mt-5 grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)]">
       <div class="panel rounded-2xl p-5">
-        <div class="flex flex-wrap justify-between items-center gap-3"><div><p class="text-xs uppercase tracking-widest text-slate-400">Workspace</p><h2 id="workspace-title" class="text-xl font-semibold mt-1">My Workspace</h2></div><select id="workspace-select" class="field rounded-lg p-2 max-w-full" aria-label="Select workspace"></select></div>
-        <form id="task-form" class="mt-5 grid gap-3 sm:grid-cols-2"><input id="task-title" class="field rounded-lg p-3 sm:col-span-2" maxlength="240" placeholder="Add a task…" required><label class="text-sm text-slate-300">Due date (optional)<input id="task-due" type="date" class="field rounded-lg p-3 mt-1 w-full"></label><label class="text-sm text-slate-300">Repeat<select id="task-repeat" class="field rounded-lg p-3 mt-1 w-full"><option value="">Does not repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></label><button class="rounded-lg px-5 py-3 font-semibold bg-emerald-400 text-slate-950 sm:col-span-2" type="submit">Add task</button></form>
+        <div class="flex flex-wrap justify-between items-center gap-3"><div><p class="text-xs uppercase tracking-widest text-slate-400">Workspace</p><h2 id="workspace-title" class="text-xl font-semibold mt-1">My Workspace</h2></div><div class="flex flex-wrap gap-2"><select id="workspace-select" class="field rounded-lg p-2 max-w-full" aria-label="Select workspace"></select><select id="space-filter" class="field rounded-lg p-2 max-w-full" aria-label="Filter by space"><option value="all">All spaces</option></select></div></div>
+        <form id="task-form" class="mt-5 grid gap-3 sm:grid-cols-2"><input id="task-title" class="field rounded-lg p-3 sm:col-span-2" maxlength="240" placeholder="Add a task…" required><label class="text-sm text-slate-300">Due date (optional)<input id="task-due" type="date" class="field rounded-lg p-3 mt-1 w-full"></label><label class="text-sm text-slate-300">Repeat<select id="task-repeat" class="field rounded-lg p-3 mt-1 w-full"><option value="">Does not repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></label><label class="text-sm text-slate-300 sm:col-span-2">Save task in space<select id="task-space" class="field rounded-lg p-3 mt-1 w-full"><option value="">No space</option></select></label><button class="rounded-lg px-5 py-3 font-semibold bg-emerald-400 text-slate-950 sm:col-span-2" type="submit">Add task</button></form>
         <div class="mt-5 flex flex-wrap items-center justify-between gap-2"><h3 class="font-semibold">Tasks</h3><select id="task-filter" class="field rounded-lg p-2 text-sm" aria-label="Filter tasks"><option value="all">All tasks</option><option value="todo">To do</option><option value="done">Completed</option></select></div>
         <ul id="task-list" class="mt-3 space-y-2"></ul>
         <p id="empty-tasks" class="text-sm text-slate-400 mt-4">No tasks yet. Add your first task above.</p>
       </div>
       <aside class="space-y-5">
-        <div class="panel rounded-2xl p-5"><h2 class="font-semibold">Getting started</h2><ul class="mt-3 space-y-2 text-sm text-slate-300 list-disc pl-5"><li>Create your workspace</li><li>Add and complete tasks</li><li>Switch between available workspaces</li></ul></div>
-        <div class="panel rounded-2xl p-5"><h2 class="font-semibold">Development status</h2><p class="text-sm text-slate-300 mt-2">Tasks now support optional due dates and daily, weekly, or monthly recurrence. Calendar, family invitations, time tracking, automated reminders, and role management are not enabled yet.</p></div>
+        <div class="panel rounded-2xl p-5"><h2 class="font-semibold">Spaces</h2><p class="text-sm text-slate-300 mt-2">Create separate areas for personal, family, work, or other tasks. New spaces are private to your account until sharing is implemented.</p><form id="space-form" class="mt-3 grid gap-2"><input id="space-name" class="field rounded-lg p-3" maxlength="100" placeholder="New space name" required><select id="space-kind" class="field rounded-lg p-3" aria-label="Space type"><option value="personal">Personal</option><option value="family">Family</option><option value="work">Work</option><option value="custom">Custom</option></select><button type="submit" class="rounded-lg px-4 py-2 bg-emerald-400 text-slate-950 font-semibold">Create space</button></form><p id="space-status" class="text-xs text-slate-400 mt-2" role="status"></p></div><div class="panel rounded-2xl p-5"><h2 class="font-semibold">Getting started</h2><ul class="mt-3 space-y-2 text-sm text-slate-300 list-disc pl-5"><li>Create your workspace</li><li>Add and complete tasks</li><li>Switch between available workspaces</li></ul></div>
+        <div class="panel rounded-2xl p-5"><h2 class="font-semibold">Development status</h2><p class="text-sm text-slate-300 mt-2">Tasks support due dates, recurrence, and space assignment. Space sharing and invitations are not enabled yet. Calendar and automated reminders are still in development.</p></div>
       </aside>
     </section>
     <p class="text-xs text-slate-500 mt-8">Development environment only. Do not store sensitive work or family information until database access and permissions have been fully tested.</p>
@@ -59,6 +59,7 @@
     const status = $('#status');
     let user = null;
     let workspaces = [];
+    let spaces = [];
     let activeWorkspaceId = null;
     let tasks = [];
     const setStatus = (text, isError = false) => { status.textContent = text; status.className = 'mt-6 text-sm ' + (isError ? 'text-rose-300' : 'text-slate-300'); };
@@ -159,7 +160,8 @@
     }
     function renderTasks() {
       const filter = $('#task-filter').value;
-      const visible = tasks.filter(t => filter === 'all' || (filter === 'done' ? t.status === 'done' : t.status !== 'done'));
+      const selectedSpace = $('#space-filter').value;
+      const visible = tasks.filter(t => (filter === 'all' || (filter === 'done' ? t.status === 'done' : t.status !== 'done')) && (selectedSpace === 'all' || (selectedSpace === '__none__' ? !t.space_id : t.space_id === selectedSpace)));
       $('#task-list').replaceChildren();
       $('#empty-tasks').classList.toggle('hidden', visible.length > 0);
       for (const task of visible) {
@@ -193,6 +195,7 @@
         const meta = [];
         if (task.due_at) meta.push('Due ' + formatDueDate(task.due_at));
         if (task.recurrence_rule) meta.push('Repeats ' + task.recurrence_rule);
+        if (task.space_id) { const assignedSpace = spaces.find(s => s.id === task.space_id); if (assignedSpace) meta.push(assignedSpace.name); }
         if (meta.length) { const details = document.createElement('div'); details.textContent = meta.join(' · '); details.className = 'text-xs text-slate-400 mt-1'; titleWrap.append(details); }
         const del = document.createElement('button'); del.type = 'button'; del.textContent = 'Delete'; del.className = 'text-xs text-rose-300 hover:text-rose-200'; del.addEventListener('click', async () => {
           if (!confirm('Delete this task?')) return;
@@ -209,6 +212,24 @@
       if (error) { setStatus('Workspace loaded, but tasks could not be read: ' + error.message, true); return; }
       tasks = data || []; renderTasks();
     }
+    async function loadSpaces() {
+      const { data, error } = await supabase.from('spaces').select('id,name,kind,is_private,created_at').eq('workspace_id', activeWorkspaceId).order('created_at', {ascending:true});
+      if (error) throw error;
+      spaces = data || [];
+      const filter = $('#space-filter');
+      const previousFilter = filter.value || 'all';
+      filter.replaceChildren();
+      const allOption = document.createElement('option'); allOption.value = 'all'; allOption.textContent = 'All spaces'; filter.append(allOption);
+      const noneOption = document.createElement('option'); noneOption.value = '__none__'; noneOption.textContent = 'No space'; filter.append(noneOption);
+      const assignment = $('#task-space'); assignment.replaceChildren();
+      const noSpace = document.createElement('option'); noSpace.value = ''; noSpace.textContent = 'No space'; assignment.append(noSpace);
+      for (const space of spaces) {
+        const option = document.createElement('option'); option.value = space.id; option.textContent = space.name; filter.append(option);
+        const assignOption = document.createElement('option'); assignOption.value = space.id; assignOption.textContent = space.name; assignment.append(assignOption);
+      }
+      filter.value = [...filter.options].some(o => o.value === previousFilter) ? previousFilter : 'all';
+      if (spaces.length && !assignment.value) assignment.value = spaces[0].id;
+    }
     async function loadWorkspaces() {
       const { data, error } = await supabase.from('workspaces').select('id,name,created_at').order('created_at', {ascending:true});
       if (error) throw error;
@@ -224,6 +245,7 @@
       if (!workspaces.some(w => w.id === activeWorkspaceId)) activeWorkspaceId = workspaces[0].id;
       $('#workspace-select').value = activeWorkspaceId;
       $('#workspace-title').textContent = workspaces.find(w => w.id === activeWorkspaceId)?.name || 'Workspace';
+      await loadSpaces();
       await loadTasks();
       setStatus('Signed in. Workspace data loaded.');
     }
@@ -254,13 +276,23 @@
       const dueValue = $('#task-due').value;
       const dueAt = dueValue ? new Date(dueValue + 'T23:59:59').toISOString() : null;
       const recurrence = $('#task-repeat').value || null;
-      const { error } = await supabase.from('tasks').insert({workspace_id:activeWorkspaceId,title,status:'todo',priority:'normal',due_at:dueAt,recurrence_rule:recurrence,created_by:user.id});
+      const { error } = await supabase.from('tasks').insert({workspace_id:activeWorkspaceId,space_id:$('#task-space').value || null,title,status:'todo',priority:'normal',due_at:dueAt,recurrence_rule:recurrence,created_by:user.id});
       if (error) { setStatus('Task could not be saved: ' + error.message, true); return; }
       $('#task-title').value = ''; $('#task-due').value = ''; $('#task-repeat').value = '';
       await loadTasks(); setStatus(recurrence ? 'Recurring task saved. The next occurrence is created when you complete it.' : 'Task saved.');
     });
     $('#workspace-select').addEventListener('change', async () => { activeWorkspaceId = $('#workspace-select').value; $('#workspace-title').textContent = workspaces.find(w => w.id === activeWorkspaceId)?.name || 'Workspace'; await loadTasks(); });
     $('#task-filter').addEventListener('change', renderTasks);
+    $('#space-filter').addEventListener('change', renderTasks);
+    $('#space-form').addEventListener('submit', async (event) => {
+      event.preventDefault(); if (!user || !activeWorkspaceId) return;
+      const name = $('#space-name').value.trim(); if (!name) return;
+      $('#space-status').textContent = 'Creating space…';
+      const { error } = await supabase.from('spaces').insert({workspace_id:activeWorkspaceId,name,kind:$('#space-kind').value,is_private:true,created_by:user.id});
+      if (error) { $('#space-status').textContent = 'Could not create space: ' + error.message; return; }
+      $('#space-name').value = ''; await loadSpaces();
+      $('#space-status').textContent = 'Space created. It is private to your account for now.';
+    });
     $('#signout').addEventListener('click', async () => { const { error } = await supabase.auth.signOut(); if (error) { setStatus('Sign-out failed: ' + error.message, true); return; } location.replace('/supabase-auth-test.html'); });
     supabase.auth.onAuthStateChange((_event, session) => { if (!session) location.replace('/supabase-auth-test.html'); });
   </script>
