@@ -3,22 +3,32 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#101827">
-  <title>CRTracking · Supabase connection test</title>
+  <meta name="theme-color" content="#f4f7fb">
+  <title>CRTracking · Your day, organized</title>
+  <meta name="description" content="A simpler place to organize tasks, family plans, reminders and work time.">
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(135deg,#0f172a,#1e1e24 55%,#111827);min-height:100vh}
-    .panel{background:rgba(30,41,59,.68);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(18px)}
-    .field{background:#0f172a;border:1px solid #475569;color:#fff}
-    .field:focus{outline:2px solid #34d399;outline-offset:1px}
-  </style>
+  
+<style>
+:root{color-scheme:light}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(ellipse at 10% 0%,#e3f3ef 0,transparent 38%),radial-gradient(ellipse at 100% 0%,#e9efff 0,transparent 32%),#f4f7fb;min-height:100vh;color:#17243a}
+.panel{background:rgba(255,255,255,.94);border:1px solid #e4eaf1;box-shadow:0 12px 36px rgba(28,45,72,.08);backdrop-filter:blur(14px)}
+.field{background:#fff;border:1px solid #d7e0ea;color:#17243a;min-height:48px;border-radius:12px;font-size:16px}
+.field:focus{outline:3px solid rgba(22,139,120,.2);border-color:#168b78}
+.text-slate-100,.text-slate-200,.text-slate-300{color:#334155!important}.text-slate-400,.text-slate-500{color:#64748b!important}
+.bg-slate-700{background:#e8edf3!important;color:#243449!important}.bg-emerald-400{background:#168b78!important;color:#fff!important}.text-slate-950{color:#fff!important}.text-emerald-300,.text-emerald-400{color:#137b6c!important}.border-slate-600{border-color:#d8e1eb!important}
+button,a{min-height:46px;transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid rgba(22,139,120,.28);outline-offset:2px}
+@media(max-width:640px){body{padding-top:calc(1.5rem + env(safe-area-inset-top));padding-bottom:calc(1.5rem + env(safe-area-inset-bottom))}.panel{padding:1.2rem!important}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important}}
+</style>
 </head>
 <body class="text-slate-100 px-4 py-10">
   <main class="max-w-xl mx-auto">
-    <p class="text-emerald-400 text-xs uppercase tracking-[.22em] font-bold">Development only</p>
+    <p class="text-emerald-400 text-xs uppercase tracking-[.22em] font-bold">Make room for what matters</p>
     <h1 class="text-3xl font-bold mt-2">CRTracking</h1>
-    <p class="text-slate-300 mt-2">Supabase email authentication connection test</p>
+    <p class="text-slate-300 mt-2">Your day, organized. One simple place for tasks, plans and time.</p>
+    <div class="grid grid-cols-3 gap-2 mt-6 text-center text-sm"><div class="panel rounded-xl p-3"><div class="text-xl">✓</div><div class="font-semibold mt-1">Tasks</div></div><div class="panel rounded-xl p-3"><div class="text-xl">▦</div><div class="font-semibold mt-1">Plans</div></div><div class="panel rounded-xl p-3"><div class="text-xl">◷</div><div class="font-semibold mt-1">Time</div></div></div>
     <section class="panel rounded-2xl p-5 mt-7">
+      <h2 class="text-xl font-semibold">Welcome back</h2><p class="text-sm text-slate-500 mt-1 mb-4">Sign in to continue, or create your free account.</p>
       <div id="connection" class="text-sm text-slate-300">Connecting to Supabase…</div>
       <form id="auth-form" class="mt-5 space-y-4">
         <div>
@@ -28,11 +38,11 @@
         <div>
           <label for="password" class="block text-sm mb-1">Password</label>
           <input id="password" class="field rounded-lg w-full p-3" type="password" autocomplete="current-password" minlength="12" required>
-          <p class="text-xs text-slate-400 mt-1">Use a unique password of at least 12 characters.</p>
+          <p class="text-xs text-slate-400 mt-1">Use a unique password with at least 12 characters.</p>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button id="signup" class="rounded-lg p-3 font-semibold bg-emerald-400 text-slate-950" type="button">Create account</button>
           <button class="rounded-lg p-3 font-semibold bg-slate-700 hover:bg-slate-600" type="submit">Sign in</button>
+          <button id="signup" class="rounded-lg p-3 font-semibold bg-emerald-400 text-slate-950" type="button">Create free account</button>
         </div>
       </form>
       <div id="message" role="status" aria-live="polite" class="text-sm mt-4 break-words"></div>
@@ -43,7 +53,7 @@
         <button id="signout" class="mt-4 ml-2 rounded-lg px-4 py-3 bg-slate-700">Sign out</button>
       </div>
     </section>
-    <p class="text-xs text-slate-400 mt-5 leading-relaxed">Use Continue to planner after signing in to open the development planner. This preview is under active testing; do not store sensitive work or family information until database access and permissions have been fully tested. The publishable key is intended for client-side use; database security depends on correctly tested RLS policies.</p>
+    <p class="text-xs text-slate-400 mt-5 leading-relaxed">Use Continue to planner after signing in to open the development planner. Development preview: this app is still being tested. Please do not store sensitive work or family information yet. The publishable key is intended for client-side use; database security depends on correctly tested RLS policies.</p>
   </main>
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -71,7 +81,7 @@
     try {
       const { data, error } = await supabase.auth.getSession();
       if (error) throw error;
-      connection.textContent = 'Supabase client initialized successfully.';
+      connection.textContent = 'Ready when you are.';
       connection.className = 'text-sm text-emerald-300';
       renderSession(data.session);
     } catch (error) {
