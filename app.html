@@ -40,6 +40,20 @@
         </div>
         <p id="today-dashboard-note" class="text-xs text-slate-500 mt-3">Overview is private to this workspace.</p>
       </div>
+      <section class="panel rounded-2xl p-5 lg:col-span-2">
+        <div class="flex flex-wrap justify-between items-center gap-2"><div><p class="text-xs uppercase tracking-widest text-slate-400">Schedule</p><h2 class="text-xl font-semibold mt-1">Calendar & commitments</h2></div><span id="calendar-count" class="text-xs text-slate-400">Upcoming events</span></div>
+        <form id="event-form" class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <label class="text-sm text-slate-300 sm:col-span-2">Event title<input id="event-title" class="field rounded-lg p-3 mt-1 w-full" maxlength="240" required placeholder="Appointment, practice, meeting…"></label>
+          <label class="text-sm text-slate-300">Starts<input id="event-start" type="datetime-local" class="field rounded-lg p-3 mt-1 w-full" required></label>
+          <label class="text-sm text-slate-300">Ends<input id="event-end" type="datetime-local" class="field rounded-lg p-3 mt-1 w-full" required></label>
+          <label class="text-sm text-slate-300 sm:col-span-2">Location (optional)<input id="event-location" class="field rounded-lg p-3 mt-1 w-full" maxlength="300" placeholder="Address or place"></label>
+          <label class="text-sm text-slate-300 sm:col-span-2">Details (optional)<input id="event-details" class="field rounded-lg p-3 mt-1 w-full" maxlength="2000" placeholder="Notes or preparation"></label>
+          <label class="text-sm text-slate-300">Space<select id="event-space" class="field rounded-lg p-3 mt-1 w-full"><option value="">No space</option></select></label>
+          <button type="submit" class="rounded-lg px-5 py-3 font-semibold bg-emerald-400 text-slate-950 self-end">Add to calendar</button>
+        </form>
+        <p id="event-status" class="text-xs text-slate-400 mt-2" role="status" aria-live="polite"></p>
+        <div class="grid gap-4 md:grid-cols-2 mt-5"><div><h3 class="font-semibold text-sm">Today</h3><ul id="calendar-today" class="mt-2 space-y-2"></ul></div><div><h3 class="font-semibold text-sm">Next 7 days</h3><ul id="calendar-week" class="mt-2 space-y-2"></ul></div></div>
+      </section>
       <div class="panel rounded-2xl p-5">
         <div class="flex flex-wrap justify-between items-center gap-3"><div><p class="text-xs uppercase tracking-widest text-slate-400">Workspace</p><h2 id="workspace-title" class="text-xl font-semibold mt-1">My Workspace</h2></div><div class="flex flex-wrap gap-2"><select id="workspace-select" class="field rounded-lg p-2 max-w-full" aria-label="Select workspace"></select><select id="space-filter" class="field rounded-lg p-2 max-w-full" aria-label="Filter by space"><option value="all">All spaces</option></select></div></div>
         <form id="task-form" class="mt-5 grid gap-3 sm:grid-cols-2"><input id="task-title" class="field rounded-lg p-3 sm:col-span-2" maxlength="240" placeholder="Add a task…" required><label class="text-sm text-slate-300">Due date (optional)<input id="task-due" type="date" class="field rounded-lg p-3 mt-1 w-full"></label><label class="text-sm text-slate-300">Priority<select id="task-priority" class="field rounded-lg p-3 mt-1 w-full"><option value="normal">Normal</option><option value="low">Low</option><option value="high">High</option><option value="urgent">Urgent</option></select></label><label class="text-sm text-slate-300">Repeat<select id="task-repeat" class="field rounded-lg p-3 mt-1 w-full"><option value="">Does not repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></label><label class="text-sm text-slate-300 sm:col-span-2">Save task in space<select id="task-space" class="field rounded-lg p-3 mt-1 w-full"><option value="">No space</option></select></label><button class="rounded-lg px-5 py-3 font-semibold bg-emerald-400 text-slate-950 sm:col-span-2" type="submit">Add task</button></form>
@@ -76,6 +90,7 @@
     let spaces = [];
     let activeWorkspaceId = null;
     let tasks = [];
+    let calendarEvents = [];
     const setStatus = (text, isError = false) => { status.textContent = text; status.className = 'mt-6 text-sm ' + (isError ? 'text-rose-300' : 'text-slate-300'); };
     // Idle session policy: warn at 13 minutes and sign out at 15 minutes.
     // A non-sensitive timestamp synchronizes activity between tabs; auth tokens are never written here.
@@ -171,6 +186,43 @@
         base.setDate(Math.min(day, lastDay));
       }
       return base.toISOString();
+    }
+    function localDateTimeInput(date) {
+      const d = new Date(date); return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+    }
+    function renderCalendar() {
+      const now = new Date(); const todayStart = new Date(now); todayStart.setHours(0,0,0,0);
+      const tomorrow = new Date(todayStart); tomorrow.setDate(tomorrow.getDate()+1);
+      const weekEnd = new Date(todayStart); weekEnd.setDate(weekEnd.getDate()+7);
+      const upcoming = calendarEvents.filter(e=>new Date(e.ends_at)>=now).sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at));
+      const today = upcoming.filter(e=>new Date(e.starts_at)<tomorrow && new Date(e.ends_at)>=todayStart);
+      const week = upcoming.filter(e=>new Date(e.starts_at)>=tomorrow && new Date(e.starts_at)<weekEnd);
+      $('#calendar-count').textContent=upcoming.length+' upcoming';
+      const renderList=(selector,items)=>{
+        const root=$(selector); root.replaceChildren();
+        for(const event of items.slice(0,8)){
+          const li=document.createElement('li'); li.className='rounded-lg bg-slate-900/70 border border-slate-700 px-3 py-2';
+          const top=document.createElement('div'); top.className='flex justify-between gap-3';
+          const title=document.createElement('span'); title.className='font-medium break-words'; title.textContent=event.title;
+          const time=document.createElement('span'); time.className='text-xs text-slate-400 whitespace-nowrap'; time.textContent=new Date(event.starts_at).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+          top.append(title,time); li.append(top);
+          const meta=document.createElement('p'); meta.className='text-xs text-slate-400 mt-1';
+          const parts=[new Date(event.starts_at).toLocaleDateString(undefined,{month:'short',day:'numeric'}),new Date(event.ends_at).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})];
+          if(event.location)parts.push(event.location); if(event.details)parts.push(event.details);
+          meta.textContent=parts.join(' · '); li.append(meta);
+          const del=document.createElement('button'); del.type='button'; del.className='text-xs text-rose-300 mt-2'; del.textContent='Delete event';
+          del.addEventListener('click',async()=>{if(!confirm('Delete this calendar event?'))return;const {error}=await supabase.from('calendar_events').delete().eq('id',event.id).eq('workspace_id',activeWorkspaceId);if(error){$('#event-status').textContent='Could not delete event: '+error.message;return;}await loadCalendarEvents();$('#event-status').textContent='Calendar event deleted.';});
+          li.append(del); root.append(li);
+        }
+        if(!items.length){const empty=document.createElement('li');empty.className='text-sm text-slate-400';empty.textContent='Nothing scheduled.';root.append(empty);}
+      };
+      renderList('#calendar-today',today); renderList('#calendar-week',week);
+    }
+    async function loadCalendarEvents() {
+      if(!activeWorkspaceId)return;
+      const {data,error}=await supabase.from('calendar_events').select('id,title,details,starts_at,ends_at,location,space_id').eq('workspace_id',activeWorkspaceId).gte('ends_at',new Date(new Date().setHours(0,0,0,0)).toISOString()).order('starts_at',{ascending:true}).limit(100);
+      if(error){$('#event-status').textContent='Calendar could not load: '+error.message;return;}
+      calendarEvents=data||[];renderCalendar();
     }
     function dashboardTaskItem(task, overdue = false) {
       const li = document.createElement('li');
@@ -310,11 +362,13 @@
       const noneOption = document.createElement('option'); noneOption.value = '__none__'; noneOption.textContent = 'No space'; filter.append(noneOption);
       const assignment = $('#task-space'); assignment.replaceChildren();
       const editAssignment = $('#edit-task-space'); editAssignment.replaceChildren();
+      const eventSpace = $('#event-space'); eventSpace.replaceChildren(); const eventNoSpace=document.createElement('option'); eventNoSpace.value=''; eventNoSpace.textContent='No space'; eventSpace.append(eventNoSpace);
       const editNone = document.createElement('option'); editNone.value = ''; editNone.textContent = 'No space'; editAssignment.append(editNone);
       const noSpace = document.createElement('option'); noSpace.value = ''; noSpace.textContent = 'No space'; assignment.append(noSpace);
       for (const space of spaces) {
         const option = document.createElement('option'); option.value = space.id; option.textContent = space.name; filter.append(option);
         const assignOption = document.createElement('option'); assignOption.value = space.id; assignOption.textContent = space.name; assignment.append(assignOption);
+        const eventOption=document.createElement('option'); eventOption.value=space.id; eventOption.textContent=space.name; eventSpace.append(eventOption);
         const editOption = document.createElement('option'); editOption.value = space.id; editOption.textContent = space.name; editAssignment.append(editOption);
       }
       filter.value = [...filter.options].some(o => o.value === previousFilter) ? previousFilter : 'all';
@@ -337,6 +391,7 @@
       $('#workspace-title').textContent = workspaces.find(w => w.id === activeWorkspaceId)?.name || 'Workspace';
       await loadSpaces();
       await loadTasks();
+      await loadCalendarEvents();
       setStatus('Signed in. Workspace data loaded.');
     }
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
@@ -370,6 +425,19 @@
       if (error) { setStatus('Task could not be saved: ' + error.message, true); return; }
       $('#task-title').value = ''; $('#task-due').value = ''; $('#task-repeat').value = ''; $('#task-priority').value = 'normal';
       await loadTasks(); setStatus(recurrence ? 'Recurring task saved. The next occurrence is created when you complete it.' : 'Task saved.');
+    });
+    const defaultEventStart=new Date(); defaultEventStart.setMinutes(0,0,0); defaultEventStart.setHours(defaultEventStart.getHours()+1);
+    const defaultEventEnd=new Date(defaultEventStart); defaultEventEnd.setHours(defaultEventEnd.getHours()+1);
+    $('#event-start').value=localDateTimeInput(defaultEventStart); $('#event-end').value=localDateTimeInput(defaultEventEnd);
+    $('#event-form').addEventListener('submit',async event=>{
+      event.preventDefault(); if(!user||!activeWorkspaceId)return;
+      const title=$('#event-title').value.trim(),start=$('#event-start').value,end=$('#event-end').value;
+      if(!title||!start||!end||new Date(end)<=new Date(start)){ $('#event-status').textContent='Enter a title and a valid end time after the start time.';return; }
+      $('#event-status').textContent='Saving calendar event…';
+      const {error}=await supabase.from('calendar_events').insert({workspace_id:activeWorkspaceId,space_id:$('#event-space').value||null,title,starts_at:new Date(start).toISOString(),ends_at:new Date(end).toISOString(),location:$('#event-location').value.trim()||null,details:$('#event-details').value.trim()||null,created_by:user.id});
+      if(error){$('#event-status').textContent='Could not save event: '+error.message;return;}
+      $('#event-title').value='';$('#event-location').value='';$('#event-details').value='';
+      await loadCalendarEvents();$('#event-status').textContent='Calendar event saved.';
     });
     $('#workspace-select').addEventListener('change', async () => { activeWorkspaceId = $('#workspace-select').value; $('#workspace-title').textContent = workspaces.find(w => w.id === activeWorkspaceId)?.name || 'Workspace'; await loadTasks(); });
     $('#task-filter').addEventListener('change', renderTasks);
