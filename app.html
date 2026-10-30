@@ -211,7 +211,7 @@
       const detail=document.createElement('div'); detail.className='text-xs text-slate-300'; detail.textContent=body;
       message.append(heading,detail);
       const snooze=document.createElement('button'); snooze.type='button'; snooze.className='text-xs rounded-lg bg-slate-700 px-3 py-2'; snooze.textContent='Snooze 30 min';
-      snooze.addEventListener('click',()=>{snoozedUntil=Date.now()+30*60*1000;card.remove();});
+      snooze.addEventListener('click',()=>{snoozedUntil=Date.now()+30*60*1000;let seen={};try{seen=JSON.parse(localStorage.getItem(reminderSeenKey())||'{}');}catch(_){}delete seen[key];try{localStorage.setItem(reminderSeenKey(),JSON.stringify(seen));}catch(_){}card.remove();});
       card.append(message,snooze); alerts.prepend(card);
       while(alerts.children.length>5) alerts.lastElementChild.remove();
       if('Notification' in window && Notification.permission==='granted' && !inQuietHours()) {
