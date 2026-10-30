@@ -201,16 +201,17 @@
       const upcomingList = $('#today-upcoming-list'); upcomingList.replaceChildren();
       for (const task of upcoming.slice(0,5)) upcomingList.append(dashboardTaskItem(task));
       if (!upcoming.length) { const p=document.createElement('li'); p.className='text-slate-400'; p.textContent='No tasks due in the next 7 days.'; upcomingList.append(p); }
+      const weekStart = new Date(start); weekStart.setDate(weekStart.getDate()-((weekStart.getDay()+6)%7));
+      const weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate()+7);
       const [jobResult, entryResult] = await Promise.all([
         supabase.from('jobs').select('id,weekly_target_hours').eq('workspace_id',activeWorkspaceId).eq('is_active',true),
-        supabase.from('time_entries').select('started_at,ended_at,duration_minutes,created_at').eq('workspace_id',activeWorkspaceId).gte('started_at', (()=>{const d=new Date(start);d.setDate(d.getDate()-((d.getDay()+6)%7));return d.toISOString()})())
+        supabase.from('time_entries').select('started_at,ended_at,duration_minutes,created_at').eq('workspace_id',activeWorkspaceId).gte('started_at',weekStart.toISOString()).lt('started_at',weekEnd.toISOString())
       ]);
       if (jobResult.error || entryResult.error) {
         $('#today-hours-logged').textContent='—'; $('#today-hours-target').textContent='Time summary unavailable';
         return;
       }
-      const weekStart = new Date(start); weekStart.setDate(weekStart.getDate()-((weekStart.getDay()+6)%7));
-      const loggedMinutes = (entryResult.data||[]).filter(e=>new Date(e.started_at)>=weekStart && new Date(e.started_at)<nextWeek).reduce((sum,e)=>sum+(e.ended_at ? Math.max(1,Math.ceil((new Date(e.ended_at)-new Date(e.started_at))/60000)) : Number(e.duration_minutes)||0),0);
+      const loggedMinutes = (entryResult.data||[]).reduce((sum,e)=>sum+(e.ended_at ? Math.max(1,Math.ceil((new Date(e.ended_at)-new Date(e.started_at))/60000)) : Number(e.duration_minutes)||0),0);
       const targetHours = (jobResult.data||[]).reduce((sum,j)=>sum+Number(j.weekly_target_hours||0),0);
       $('#today-hours-logged').textContent=(loggedMinutes/60).toFixed(1)+'h';
       $('#today-hours-target').textContent=targetHours ? 'of '+targetHours+'h weekly target' : 'No weekly targets set';
