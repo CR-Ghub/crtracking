@@ -273,7 +273,7 @@
       const upcoming = calendarEvents.filter(e=>new Date(e.ends_at)>=now).sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at));
       const today = upcoming.filter(e=>new Date(e.starts_at)<tomorrow && new Date(e.ends_at)>=todayStart);
       const week = upcoming.filter(e=>new Date(e.starts_at)>=tomorrow && new Date(e.starts_at)<weekEnd);
-      $('#calendar-count').textContent=upcoming.length+' upcoming';\n      checkReminders();
+      $('#calendar-count').textContent=upcoming.length+' upcoming'; checkReminders();\n      checkReminders();
       const renderList=(selector,items)=>{
         const root=$(selector); root.replaceChildren();
         for(const event of items.slice(0,8)){
@@ -425,7 +425,7 @@
       if (!activeWorkspaceId) return;
       const { data, error } = await supabase.from('tasks').select('id,title,status,created_at,workspace_id,space_id,description,priority,due_at,recurrence_rule').eq('workspace_id', activeWorkspaceId).order('created_at', {ascending:false});
       if (error) { setStatus('Workspace loaded, but tasks could not be read: ' + error.message, true); return; }
-      tasks = data || []; renderTasks(); await loadTodayDashboard(); checkReminders();
+      tasks = data || []; renderTasks(); await loadTodayDashboard(); checkReminders(); checkReminders();
     }
     async function loadSpaces() {
       const { data, error } = await supabase.from('spaces').select('id,name,kind,is_private,created_at').eq('workspace_id', activeWorkspaceId).order('created_at', {ascending:true});
@@ -465,9 +465,9 @@
       if (!workspaces.some(w => w.id === activeWorkspaceId)) activeWorkspaceId = workspaces[0].id;
       $('#workspace-select').value = activeWorkspaceId;
       $('#workspace-title').textContent = workspaces.find(w => w.id === activeWorkspaceId)?.name || 'Workspace';
-      await loadSpaces();
+      await loadSpaces();\n      loadReminderSettings();
       await loadTasks();
-      await loadCalendarEvents();
+      await loadCalendarEvents();\n      checkReminders();\n      if(reminderTimer) clearInterval(reminderTimer);\n      reminderTimer=setInterval(checkReminders,60000);
       setStatus('Signed in. Workspace data loaded.');
     }
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
@@ -478,6 +478,13 @@
       $('#signed-in-user').textContent = user.email || 'Signed in';
       try { await loadWorkspaces(); } catch (e) { setStatus('Could not load workspace data: ' + (e?.message || 'Unknown error'), true); }
     }
+    $('#save-reminder-settings').addEventListener('click',saveReminderSettings);
+    $('#enable-notifications').addEventListener('click',async()=>{
+      if(!('Notification' in window)){ $('#reminder-note').textContent='This browser does not support notifications.';return; }
+      const permission=await Notification.requestPermission();
+      $('#reminder-state').textContent=permission==='granted'?'Browser notifications enabled':permission==='denied'?'Browser notifications blocked':'In-app reminders active';
+      $('#reminder-note').textContent=permission==='granted'?'Browser notifications are enabled for this browser.':'Permission was not granted. In-app reminders will still appear while the planner is open.';
+    });
     $('#save-reminder-settings').addEventListener('click',saveReminderSettings);
     $('#enable-notifications').addEventListener('click',async()=>{
       if(!('Notification' in window)){ $('#reminder-note').textContent='This browser does not support notifications.';return; }
