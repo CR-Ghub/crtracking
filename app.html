@@ -20,8 +20,8 @@
     .field:focus{outline:3px solid rgba(22,139,120,.2);border-color:var(--cr-brand)}
     .text-slate-100,.text-slate-200,.text-slate-300{color:#334155!important}.text-slate-400,.text-slate-500{color:#64748b!important}
     .bg-slate-900\/70,.bg-slate-900\/80{background:#f4f7fa!important;border:1px solid #e8edf3}
-    .bg-slate-800{background:#eef2f7!important;color:#26364b!important}.bg-slate-700{background:#e8edf3!important;color:#243449!important}.hover\\:bg-slate-600:hover{background:#dce5ed!important}
-    .bg-emerald-400{background:#168b78!important;color:#fff!important}.text-slate-950{color:#fff!important}.hover\\:bg-emerald-300:hover{background:#116b5d!important}
+    .bg-slate-800{background:#eef2f7!important;color:#26364b!important}.bg-slate-700{background:#e8edf3!important;color:#243449!important}.hover\:bg-slate-600:hover{background:#dce5ed!important}
+    .bg-emerald-400{background:#168b78!important;color:#fff!important}.text-slate-950{color:#fff!important}.hover\:bg-emerald-300:hover{background:#116b5d!important}
     .text-emerald-300,.text-emerald-400{color:#137b6c!important}.border-slate-700{border-color:#e1e8ef!important}.border-slate-600{border-color:#d8e1eb!important}
     button,a,select,input{transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease}
     button,a{min-height:42px}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid rgba(22,139,120,.28);outline-offset:2px}
@@ -60,7 +60,7 @@
         </div>
         <p id="today-dashboard-note" class="text-xs text-slate-500 mt-3">Overview is private to this workspace.</p>
       </div>
-      <section class="panel rounded-2xl p-5 lg:col-span-2">
+      <section id="calendar-section" class="panel rounded-2xl p-5 lg:col-span-2">
         <div class="flex flex-wrap justify-between items-center gap-2"><div><p class="text-xs uppercase tracking-widest text-slate-400">Schedule</p><h2 class="text-xl font-semibold mt-1">Calendar & commitments</h2></div><span id="calendar-count" class="text-xs text-slate-400">Upcoming events</span></div>
         <form id="event-form" class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <label class="text-sm text-slate-300 sm:col-span-2">Event title<input id="event-title" class="field rounded-lg p-3 mt-1 w-full" maxlength="240" required placeholder="Appointment, practice, meeting…"></label>
@@ -74,7 +74,7 @@
         <p id="event-status" class="text-xs text-slate-400 mt-2" role="status" aria-live="polite"></p>
         <div class="grid gap-4 md:grid-cols-2 mt-5"><div><h3 class="font-semibold text-sm">Today</h3><ul id="calendar-today" class="mt-2 space-y-2"></ul></div><div><h3 class="font-semibold text-sm">Next 7 days</h3><ul id="calendar-week" class="mt-2 space-y-2"></ul></div></div>
       </section>
-      <section class="panel rounded-2xl p-5 lg:col-span-2">
+      <section id="reminders-section" class="panel rounded-2xl p-5 lg:col-span-2">
         <div class="flex flex-wrap items-center justify-between gap-2"><div><p class="text-xs uppercase tracking-widest text-emerald-300">Stay on track</p><h2 class="text-xl font-semibold mt-1">Reminders</h2></div><span id="reminder-state" class="text-xs text-slate-400">Checking reminders…</span></div>
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mt-4">
           <label class="flex items-center gap-2 text-sm"><input id="remind-tasks" type="checkbox" class="accent-emerald-400" checked> Task due / overdue</label>
@@ -87,7 +87,7 @@
         <p id="reminder-note" class="text-xs text-slate-400 mt-3">Reminders run while CRTracking is open. Browser notifications require permission. Quiet hours suppress notifications; missed reminders are not queued.</p>
         <div id="reminder-alerts" class="mt-4 space-y-2" aria-live="polite"></div>
       </section>
-      <div class="panel rounded-2xl p-5">
+      <div id="task-section" class="panel rounded-2xl p-5">
         <div class="flex flex-wrap justify-between items-center gap-3"><div><p class="text-xs uppercase tracking-widest text-slate-400">Workspace</p><h2 id="workspace-title" class="text-xl font-semibold mt-1">My Workspace</h2></div><div class="flex flex-wrap gap-2"><select id="workspace-select" class="field rounded-lg p-2 max-w-full" aria-label="Select workspace"></select><select id="space-filter" class="advanced-only field rounded-lg p-2 max-w-full" aria-label="Filter by space"><option value="all">All spaces</option></select></div></div>
         <form id="task-form" class="mt-5 grid gap-3 sm:grid-cols-2"><input id="task-title" class="field rounded-lg p-3 sm:col-span-2" maxlength="240" placeholder="Add a task…" required><label class="text-sm text-slate-300">Due date (optional)<input id="task-due" type="date" class="field rounded-lg p-3 mt-1 w-full"></label><label class="advanced-only text-sm text-slate-300">Priority<select id="task-priority" class="field rounded-lg p-3 mt-1 w-full"><option value="normal">Normal</option><option value="low">Low</option><option value="high">High</option><option value="urgent">Urgent</option></select></label><label class="text-sm text-slate-300">Repeat<select id="task-repeat" class="field rounded-lg p-3 mt-1 w-full"><option value="">Does not repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></label><label class="text-sm text-slate-300 sm:col-span-2">Save task in space<select id="task-space" class="field rounded-lg p-3 mt-1 w-full"><option value="">No space</option></select></label><button class="rounded-lg px-5 py-3 font-semibold bg-emerald-400 text-slate-950 sm:col-span-2" type="submit">Add task</button></form>
         <form id="edit-task-form" class="hidden mt-5 rounded-xl border border-emerald-500/40 bg-slate-900/70 p-4 grid gap-3 sm:grid-cols-2"><h3 class="font-semibold sm:col-span-2">Edit task</h3><input id="edit-task-id" type="hidden"><label class="text-sm text-slate-300 sm:col-span-2">Task title<input id="edit-task-title" class="field rounded-lg p-3 mt-1 w-full" maxlength="240" required></label><label class="text-sm text-slate-300">Due date<input id="edit-task-due" type="date" class="field rounded-lg p-3 mt-1 w-full"></label><label class="text-sm text-slate-300">Priority<select id="edit-task-priority" class="field rounded-lg p-3 mt-1 w-full"><option value="low">Low</option><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select></label><label class="text-sm text-slate-300">Repeat<select id="edit-task-repeat" class="field rounded-lg p-3 mt-1 w-full"><option value="">Does not repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></label><label class="text-sm text-slate-300">Space<select id="edit-task-space" class="field rounded-lg p-3 mt-1 w-full"><option value="">No space</option></select></label><div class="sm:col-span-2 flex gap-2"><button type="submit" class="rounded-lg px-4 py-2 bg-emerald-400 text-slate-950 font-semibold">Save changes</button><button id="cancel-edit" type="button" class="rounded-lg px-4 py-2 bg-slate-700">Cancel</button></div></form><div class="mt-5 flex flex-wrap items-center justify-between gap-2"><h3 class="font-semibold">Tasks</h3><select id="task-filter" class="field rounded-lg p-2 text-sm" aria-label="Filter tasks"><option value="all">All tasks</option><option value="todo">To do</option><option value="done">Completed</option></select><select id="daily-filter" class="advanced-only field rounded-lg p-2 text-sm" aria-label="Daily planning filter"><option value="all">Any due date</option><option value="today">Due today</option><option value="overdue">Overdue</option><option value="upcoming">Upcoming</option><option value="no-date">No due date</option></select><select id="task-sort" class="advanced-only field rounded-lg p-2 text-sm" aria-label="Sort tasks"><option value="created">Recently added</option><option value="due">Due date</option><option value="priority">Priority</option></select></div>
@@ -499,7 +499,11 @@
       reminderTimer=setInterval(checkReminders,60000);
       setStatus('Signed in. Workspace data loaded.');
     }
-    const modeToggle=$('#mode-toggle');\n    function applyInterfaceMode(mode){const advanced=mode==='advanced';document.body.classList.toggle('simple-mode',!advanced);modeToggle.textContent=advanced?'Switch to Simple':'Switch to Advanced';modeToggle.setAttribute('aria-pressed',String(advanced));try{localStorage.setItem('crtracking:interface-mode',mode)}catch(_){}}\n    let savedMode='simple';try{savedMode=localStorage.getItem('crtracking:interface-mode')||'simple'}catch(_){}applyInterfaceMode(savedMode);\n    modeToggle.addEventListener('click',()=>applyInterfaceMode(document.body.classList.contains('simple-mode')?'advanced':'simple'));\n    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    const modeToggle=$('#mode-toggle');
+    function applyInterfaceMode(mode){const advanced=mode==='advanced';document.body.classList.toggle('simple-mode',!advanced);modeToggle.textContent=advanced?'Switch to Simple':'Switch to Advanced';modeToggle.setAttribute('aria-pressed',String(advanced));try{localStorage.setItem('crtracking:interface-mode',mode)}catch(_){}}
+    let savedMode='simple';try{savedMode=localStorage.getItem('crtracking:interface-mode')||'simple'}catch(_){}applyInterfaceMode(savedMode);
+    modeToggle.addEventListener('click',()=>applyInterfaceMode(document.body.classList.contains('simple-mode')?'advanced':'simple'));
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
     if (sessionError) { setStatus('Could not check your session: ' + sessionError.message, true); }
     else if (!sessionData.session) { location.replace('/supabase-auth-test.html'); }
     else {
