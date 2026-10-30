@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f4f7fb">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#f4f7fb">
 <title>CRTracking · Time Tracking</title><script src="https://cdn.tailwindcss.com"></script>
 <style>
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(ellipse at 12% 0%,#e3f3ef 0,transparent 34%),radial-gradient(ellipse at 100% 0%,#e9efff 0,transparent 30%),#f4f7fb;min-height:100vh;color:#17243a;letter-spacing:-.01em}
@@ -60,6 +60,8 @@ section[id],div[id],form[id]{scroll-margin-top:1.5rem}
 @media(prefers-reduced-motion:reduce){:root{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 
 </style>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="CRTracking">
 </head>
 <body class="simple-mode text-slate-900 px-4 py-6 sm:py-8"><a class="cr-skip" href="#main-content">Skip to main content</a><main id="main-content" class="max-w-6xl mx-auto">
 <header class="flex flex-wrap items-center justify-between gap-4"><div><p class="text-emerald-400 text-xs uppercase tracking-[.22em] font-bold">Development preview</p><h1 class="text-3xl font-bold mt-1">Time tracking</h1><p class="text-slate-300 mt-1">Jobs, timers, manual entries, and weekly targets</p></div><div class="flex flex-wrap items-center gap-3"><button id="mode-toggle" class="cr-mode" type="button" aria-pressed="false">Switch to Advanced</button><div class="cr-accessibility" aria-label="Accessibility preferences"><button id="text-smaller" type="button" aria-label="Use standard text size" title="Standard text">A</button><button id="text-larger" type="button" aria-label="Increase text size" title="Larger text">A+</button><button id="contrast-toggle" type="button" aria-pressed="false" aria-label="Toggle high contrast" title="High contrast">◐</button></div><a href="/app.html" class="rounded-lg px-4 py-2 bg-slate-700 hover:bg-slate-600">Back to planner</a><button id="signout" class="rounded-lg px-4 py-2 bg-slate-700 hover:bg-slate-600">Sign out</button></div></header>
