@@ -439,7 +439,7 @@
       $('#event-title').value='';$('#event-location').value='';$('#event-details').value='';
       await loadCalendarEvents();$('#event-status').textContent='Calendar event saved.';
     });
-    $('#workspace-select').addEventListener('change', async () => { activeWorkspaceId = $('#workspace-select').value; $('#workspace-title').textContent = workspaces.find(w => w.id === activeWorkspaceId)?.name || 'Workspace'; await loadTasks(); });
+    $('#workspace-select').addEventListener('change', async () => { activeWorkspaceId = $('#workspace-select').value; $('#workspace-title').textContent = workspaces.find(w => w.id === activeWorkspaceId)?.name || 'Workspace'; await loadTasks(); await loadCalendarEvents(); });
     $('#task-filter').addEventListener('change', renderTasks);
     $('#daily-filter').addEventListener('change', renderTasks);
     $('#task-sort').addEventListener('change', renderTasks);
