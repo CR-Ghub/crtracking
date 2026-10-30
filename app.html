@@ -54,6 +54,19 @@
         <p id="event-status" class="text-xs text-slate-400 mt-2" role="status" aria-live="polite"></p>
         <div class="grid gap-4 md:grid-cols-2 mt-5"><div><h3 class="font-semibold text-sm">Today</h3><ul id="calendar-today" class="mt-2 space-y-2"></ul></div><div><h3 class="font-semibold text-sm">Next 7 days</h3><ul id="calendar-week" class="mt-2 space-y-2"></ul></div></div>
       </section>
+      <section class="panel rounded-2xl p-5 lg:col-span-2">
+        <div class="flex flex-wrap items-center justify-between gap-2"><div><p class="text-xs uppercase tracking-widest text-emerald-300">Stay on track</p><h2 class="text-xl font-semibold mt-1">Reminders</h2></div><span id="reminder-state" class="text-xs text-slate-400">Checking reminders…</span></div>
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mt-4">
+          <label class="flex items-center gap-2 text-sm"><input id="remind-tasks" type="checkbox" class="accent-emerald-400" checked> Task due / overdue</label>
+          <label class="flex items-center gap-2 text-sm"><input id="remind-events" type="checkbox" class="accent-emerald-400" checked> Upcoming events</label>
+          <label class="text-sm text-slate-300">Event reminder<select id="event-reminder-minutes" class="field rounded-lg p-2 mt-1 w-full"><option value="5">5 minutes before</option><option value="15" selected>15 minutes before</option><option value="30">30 minutes before</option><option value="60">1 hour before</option></select></label>
+          <label class="text-sm text-slate-300">Quiet hours start<input id="quiet-start" type="time" value="22:00" class="field rounded-lg p-2 mt-1 w-full"></label>
+          <label class="text-sm text-slate-300">Quiet hours end<input id="quiet-end" type="time" value="07:00" class="field rounded-lg p-2 mt-1 w-full"></label>
+        </div>
+        <div class="flex flex-wrap gap-2 mt-4"><button id="save-reminder-settings" type="button" class="rounded-lg px-4 py-2 bg-emerald-400 text-slate-950 font-semibold">Save reminder settings</button><button id="enable-notifications" type="button" class="rounded-lg px-4 py-2 bg-slate-700">Enable browser notifications</button></div>
+        <p id="reminder-note" class="text-xs text-slate-400 mt-3">Reminders run while CRTracking is open. Browser notifications require permission. Quiet hours suppress notifications; missed reminders are not queued.</p>
+        <div id="reminder-alerts" class="mt-4 space-y-2" aria-live="polite"></div>
+      </section>
       <div class="panel rounded-2xl p-5">
         <div class="flex flex-wrap justify-between items-center gap-3"><div><p class="text-xs uppercase tracking-widest text-slate-400">Workspace</p><h2 id="workspace-title" class="text-xl font-semibold mt-1">My Workspace</h2></div><div class="flex flex-wrap gap-2"><select id="workspace-select" class="field rounded-lg p-2 max-w-full" aria-label="Select workspace"></select><select id="space-filter" class="field rounded-lg p-2 max-w-full" aria-label="Filter by space"><option value="all">All spaces</option></select></div></div>
         <form id="task-form" class="mt-5 grid gap-3 sm:grid-cols-2"><input id="task-title" class="field rounded-lg p-3 sm:col-span-2" maxlength="240" placeholder="Add a task…" required><label class="text-sm text-slate-300">Due date (optional)<input id="task-due" type="date" class="field rounded-lg p-3 mt-1 w-full"></label><label class="text-sm text-slate-300">Priority<select id="task-priority" class="field rounded-lg p-3 mt-1 w-full"><option value="normal">Normal</option><option value="low">Low</option><option value="high">High</option><option value="urgent">Urgent</option></select></label><label class="text-sm text-slate-300">Repeat<select id="task-repeat" class="field rounded-lg p-3 mt-1 w-full"><option value="">Does not repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></label><label class="text-sm text-slate-300 sm:col-span-2">Save task in space<select id="task-space" class="field rounded-lg p-3 mt-1 w-full"><option value="">No space</option></select></label><button class="rounded-lg px-5 py-3 font-semibold bg-emerald-400 text-slate-950 sm:col-span-2" type="submit">Add task</button></form>
@@ -63,7 +76,7 @@
       </div>
       <aside class="space-y-5">
         <div class="panel rounded-2xl p-5"><h2 class="font-semibold">Spaces</h2><p class="text-sm text-slate-300 mt-2">Create separate areas for personal, family, work, or other tasks. New spaces are private to your account until sharing is implemented.</p><form id="space-form" class="mt-3 grid gap-2"><input id="space-name" class="field rounded-lg p-3" maxlength="100" placeholder="New space name" required><select id="space-kind" class="field rounded-lg p-3" aria-label="Space type"><option value="personal">Personal</option><option value="family">Family</option><option value="work">Work</option><option value="custom">Custom</option></select><button type="submit" class="rounded-lg px-4 py-2 bg-emerald-400 text-slate-950 font-semibold">Create space</button></form><p id="space-status" class="text-xs text-slate-400 mt-2" role="status"></p></div><div class="panel rounded-2xl p-5"><h2 class="font-semibold">Getting started</h2><ul class="mt-3 space-y-2 text-sm text-slate-300 list-disc pl-5"><li>Create your workspace</li><li>Add and complete tasks</li><li>Switch between available workspaces</li></ul></div>
-        <div class="panel rounded-2xl p-5"><h2 class="font-semibold">Development status</h2><p class="text-sm text-slate-300 mt-2">Tasks support due dates, recurrence, and space assignment. Space sharing and invitations are not enabled yet. Calendar and automated reminders are still in development.</p></div>
+        <div class="panel rounded-2xl p-5"><h2 class="font-semibold">Development status</h2><p class="text-sm text-slate-300 mt-2">Tasks support due dates, recurrence, and space assignment. Space sharing and invitations are not enabled yet. Reminders run while this planner is open; browser notifications require permission. Background reminders while the browser is closed are not enabled.</p></div>
       </aside>
     </section>
     <p class="text-xs text-slate-500 mt-8">Development environment only. Do not store sensitive work or family information until database access and permissions have been fully tested.</p>
@@ -90,7 +103,7 @@
     let spaces = [];
     let activeWorkspaceId = null;
     let tasks = [];
-    let calendarEvents = [];
+    let calendarEvents = [];\n    let reminderTimer = null;\n    let reminderPrefs = {tasks:true,events:true,eventMinutes:15,quietStart:'22:00',quietEnd:'07:00'};\n    let snoozedUntil = 0;\n    const reminderSeenKey = () => 'crtracking:reminders:seen:'+user?.id+':'+activeWorkspaceId;\n    const reminderPrefsKey = () => 'crtracking:reminders:prefs:'+user?.id+':'+activeWorkspaceId;
     const setStatus = (text, isError = false) => { status.textContent = text; status.className = 'mt-6 text-sm ' + (isError ? 'text-rose-300' : 'text-slate-300'); };
     // Idle session policy: warn at 13 minutes and sign out at 15 minutes.
     // A non-sensitive timestamp synchronizes activity between tabs; auth tokens are never written here.
@@ -169,7 +182,70 @@
     logoutNowButton.addEventListener('click', () => { void performIdleSignout(); });
     idleCheckHandle = setInterval(checkIdleTimeout, 1000);
 
-    function formatDueDate(value) {
+
+    function loadReminderSettings() {
+      try { reminderPrefs={...reminderPrefs,...JSON.parse(localStorage.getItem(reminderPrefsKey())||'{}')}; } catch (_) {}
+      $('#remind-tasks').checked=!!reminderPrefs.tasks; $('#remind-events').checked=!!reminderPrefs.events;
+      $('#event-reminder-minutes').value=String(reminderPrefs.eventMinutes||15);
+      $('#quiet-start').value=reminderPrefs.quietStart||'22:00'; $('#quiet-end').value=reminderPrefs.quietEnd||'07:00';
+      const supported='Notification' in window;
+      $('#enable-notifications').disabled=!supported;
+      $('#reminder-state').textContent=supported ? (Notification.permission==='granted'?'Browser notifications enabled':Notification.permission==='denied'?'Browser notifications blocked':'In-app reminders active') : 'In-app reminders only';
+    }
+    function saveReminderSettings() {
+      reminderPrefs={tasks:$('#remind-tasks').checked,events:$('#remind-events').checked,eventMinutes:Number($('#event-reminder-minutes').value),quietStart:$('#quiet-start').value||'22:00',quietEnd:$('#quiet-end').value||'07:00'};
+      try { localStorage.setItem(reminderPrefsKey(),JSON.stringify(reminderPrefs)); } catch (_) {}
+      $('#reminder-note').textContent='Settings saved for this browser and workspace.';
+      checkReminders();
+    }
+    function inQuietHours(now=new Date()) {
+      const toMinutes=v=>{const [h,m]=v.split(':').map(Number);return h*60+m;};
+      const current=now.getHours()*60+now.getMinutes(), start=toMinutes(reminderPrefs.quietStart), end=toMinutes(reminderPrefs.quietEnd);
+      return start===end ? false : start<end ? current>=start&&current<end : current>=start||current<end;
+    }
+    function sendReminder(title,body,key) {
+      const alerts=$('#reminder-alerts'); const card=document.createElement('div');
+      card.className='rounded-lg border border-amber-400/30 bg-slate-900/70 p-3 flex flex-wrap items-center justify-between gap-2';
+      const message=document.createElement('div'); message.className='min-w-0';
+      const heading=document.createElement('div'); heading.className='font-semibold text-sm'; heading.textContent=title;
+      const detail=document.createElement('div'); detail.className='text-xs text-slate-300'; detail.textContent=body;
+      message.append(heading,detail);
+      const snooze=document.createElement('button'); snooze.type='button'; snooze.className='text-xs rounded-lg bg-slate-700 px-3 py-2'; snooze.textContent='Snooze 30 min';
+      snooze.addEventListener('click',()=>{snoozedUntil=Date.now()+30*60*1000;card.remove();});
+      card.append(message,snooze); alerts.prepend(card);
+      while(alerts.children.length>5) alerts.lastElementChild.remove();
+      if('Notification' in window && Notification.permission==='granted' && !inQuietHours()) {
+        try { new Notification(title,{body,tag:key}); } catch (_) {}
+      }
+    }
+    function checkReminders() {
+      if(!user||!activeWorkspaceId||$('#planner').classList.contains('hidden')) return;
+      if(inQuietHours()||Date.now()<snoozedUntil) return;
+      let seen={}; try { seen=JSON.parse(localStorage.getItem(reminderSeenKey())||'{}'); } catch (_) {}
+      const now=new Date(), todayKey=now.toLocaleDateString('en-CA');
+      if(reminderPrefs.tasks) {
+        for(const task of tasks.filter(t=>t.status!=='done'&&t.due_at)) {
+          const due=new Date(task.due_at), day=new Date(due); day.setHours(0,0,0,0);
+          const today=new Date(now); today.setHours(0,0,0,0);
+          if(day>today) continue;
+          const key='task:'+task.id+':'+todayKey;
+          if(seen[key]) continue;
+          sendReminder(day<today?'Overdue task':'Task due today',task.title,key); seen[key]=Date.now();
+        }
+      }
+      if(reminderPrefs.events) {
+        const lead=(Number(reminderPrefs.eventMinutes)||15)*60000;
+        for(const event of calendarEvents) {
+          const start=new Date(event.starts_at), delta=start-now;
+          if(delta<0||delta>lead) continue;
+          const key='event:'+event.id;
+          if(seen[key]) continue;
+          sendReminder('Upcoming event',event.title+' starts in '+Math.max(1,Math.ceil(delta/60000))+' minute(s).',key); seen[key]=Date.now();
+        }
+      }
+      try { localStorage.setItem(reminderSeenKey(),JSON.stringify(seen)); } catch (_) {}
+    }
+\n    function formatDueDate(value) {
       if (!value) return '';
       const date = new Date(value);
       return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString(undefined, {year:'numeric',month:'short',day:'numeric'});
@@ -197,7 +273,7 @@
       const upcoming = calendarEvents.filter(e=>new Date(e.ends_at)>=now).sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at));
       const today = upcoming.filter(e=>new Date(e.starts_at)<tomorrow && new Date(e.ends_at)>=todayStart);
       const week = upcoming.filter(e=>new Date(e.starts_at)>=tomorrow && new Date(e.starts_at)<weekEnd);
-      $('#calendar-count').textContent=upcoming.length+' upcoming';
+      $('#calendar-count').textContent=upcoming.length+' upcoming';\n      checkReminders();
       const renderList=(selector,items)=>{
         const root=$(selector); root.replaceChildren();
         for(const event of items.slice(0,8)){
@@ -349,7 +425,7 @@
       if (!activeWorkspaceId) return;
       const { data, error } = await supabase.from('tasks').select('id,title,status,created_at,workspace_id,space_id,description,priority,due_at,recurrence_rule').eq('workspace_id', activeWorkspaceId).order('created_at', {ascending:false});
       if (error) { setStatus('Workspace loaded, but tasks could not be read: ' + error.message, true); return; }
-      tasks = data || []; renderTasks(); await loadTodayDashboard();
+      tasks = data || []; renderTasks(); await loadTodayDashboard(); checkReminders();
     }
     async function loadSpaces() {
       const { data, error } = await supabase.from('spaces').select('id,name,kind,is_private,created_at').eq('workspace_id', activeWorkspaceId).order('created_at', {ascending:true});
@@ -402,6 +478,13 @@
       $('#signed-in-user').textContent = user.email || 'Signed in';
       try { await loadWorkspaces(); } catch (e) { setStatus('Could not load workspace data: ' + (e?.message || 'Unknown error'), true); }
     }
+    $('#save-reminder-settings').addEventListener('click',saveReminderSettings);
+    $('#enable-notifications').addEventListener('click',async()=>{
+      if(!('Notification' in window)){ $('#reminder-note').textContent='This browser does not support notifications.';return; }
+      const permission=await Notification.requestPermission();
+      $('#reminder-state').textContent=permission==='granted'?'Browser notifications enabled':permission==='denied'?'Browser notifications blocked':'In-app reminders active';
+      $('#reminder-note').textContent=permission==='granted'?'Browser notifications are enabled for this browser.':'Permission was not granted. In-app reminders will still appear while the planner is open.';
+    });
     $('#workspace-form').addEventListener('submit', async (event) => {
       event.preventDefault(); if (!user) return;
       const name = $('#workspace-name').value.trim(); if (!name) return;
